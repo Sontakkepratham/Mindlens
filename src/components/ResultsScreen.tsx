@@ -1,13 +1,14 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Heart } from 'lucide-react';
 
 interface ResultsScreenProps {
   phqScore: number;
   onViewRecommendations: () => void;
+  onViewSelfCare?: () => void;
 }
 
-export function ResultsScreen({ phqScore, onViewRecommendations }: ResultsScreenProps) {
+export function ResultsScreen({ phqScore, onViewRecommendations, onViewSelfCare }: ResultsScreenProps) {
   // PHQ-9 severity levels
   const getSeverity = (score: number) => {
     if (score <= 4) return { level: 'Minimal', color: 'text-slate-700' };
@@ -91,12 +92,22 @@ export function ResultsScreen({ phqScore, onViewRecommendations }: ResultsScreen
         )}
       </div>
 
-      <Button
-        onClick={onViewRecommendations}
-        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
-      >
-        View Counselor Recommendations
-      </Button>
+      <div className="space-y-2">
+        <Button
+          onClick={onViewRecommendations}
+          className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+        >
+          View Counselor Recommendations
+        </Button>
+        {onViewSelfCare && (
+          <Button
+            onClick={onViewSelfCare}
+            className="w-full bg-pink-600 hover:bg-pink-700 text-white"
+          >
+            View Self-Care Tips
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

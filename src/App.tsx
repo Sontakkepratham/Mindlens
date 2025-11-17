@@ -5,6 +5,7 @@ import { QuestionnaireScreen } from './components/QuestionnaireScreen';
 import { ResultsScreen } from './components/ResultsScreen';
 import { RecommendationsScreen } from './components/RecommendationsScreen';
 import { BookingConfirmationScreen } from './components/BookingConfirmationScreen';
+import { SelfCareResourcesScreen } from './components/SelfCareResourcesScreen';
 import { MLDashboardScreen } from './components/MLDashboardScreen';
 import { CredentialsHelpScreen } from './components/CredentialsHelpScreen';
 import { CredentialsUploadScreen } from './components/CredentialsUploadScreen';
@@ -21,6 +22,7 @@ type Screen =
   | "results"
   | "recommendations"
   | "booking"
+  | "self-care"
   | "ml-dashboard"
   | "credentials-help"
   | "credentials-upload";
@@ -136,6 +138,10 @@ export default function App() {
     setCurrentScreen("signin");
   };
 
+  const handleViewSelfCare = () => {
+    setCurrentScreen("self-care");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">{/* Authentication Screens */}
@@ -200,6 +206,7 @@ export default function App() {
           <ResultsScreen
             phqScore={responses.reduce((a, b) => a + b, 0)}
             onViewRecommendations={handleViewRecommendations}
+            onViewSelfCare={handleViewSelfCare}
           />
         )}
         {currentScreen === "recommendations" && (
@@ -207,12 +214,14 @@ export default function App() {
             phqScore={responses.reduce((a, b) => a + b, 0)}
             onBookSession={handleBookSession}
             onEmergencyContact={handleEmergencyContact}
+            onViewSelfCare={handleViewSelfCare}
           />
         )}
         {currentScreen === "booking" && (
           <BookingConfirmationScreen
             counselorName={selectedCounselor}
             onComplete={handleBookingComplete}
+            onViewSelfCare={handleViewSelfCare}
           />
         )}
         {currentScreen === "ml-dashboard" && (
@@ -223,6 +232,11 @@ export default function App() {
         {currentScreen === "credentials-upload" && (
           <CredentialsUploadScreen
             onClose={() => setCurrentScreen("onboarding")}
+          />
+        )}
+        {currentScreen === "self-care" && (
+          <SelfCareResourcesScreen
+            onBack={() => setCurrentScreen("onboarding")}
           />
         )}
       </div>

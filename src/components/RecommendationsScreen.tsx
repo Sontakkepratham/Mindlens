@@ -1,12 +1,13 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { Phone, Calendar, AlertCircle } from 'lucide-react';
+import { Phone, Calendar, AlertCircle, Heart } from 'lucide-react';
 
 interface RecommendationsScreenProps {
   phqScore: number;
   onBookSession: (counselorId: string) => void;
   onEmergencyContact: () => void;
+  onViewSelfCare?: () => void;
 }
 
 const counselors = [
@@ -40,6 +41,7 @@ export function RecommendationsScreen({
   phqScore,
   onBookSession,
   onEmergencyContact,
+  onViewSelfCare,
 }: RecommendationsScreenProps) {
   const isHighRisk = phqScore >= 15;
 
@@ -146,20 +148,24 @@ export function RecommendationsScreen({
         </div>
 
         {/* Additional Resources */}
-        <Card className="border-slate-200 bg-white">
+        <Card className="border-pink-200 bg-pink-50">
           <div className="p-5">
-            <h3 className="text-slate-900 mb-3">Self-Care Resources</h3>
-            <div className="space-y-2">
-              <button className="w-full text-left p-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors">
-                Daily Mood Tracking Journal
-              </button>
-              <button className="w-full text-left p-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors">
-                Guided Meditation Library
-              </button>
-              <button className="w-full text-left p-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors">
-                Educational Articles on Depression
-              </button>
+            <div className="flex items-center gap-2 mb-3">
+              <Heart className="w-5 h-5 text-pink-600" />
+              <h3 className="text-pink-900">Self-Care Resources</h3>
             </div>
+            <p className="text-pink-800 mb-4 text-sm">
+              Access evidence-based coping strategies, breathing exercises, meditation guides, and more.
+            </p>
+            {onViewSelfCare && (
+              <Button
+                onClick={onViewSelfCare}
+                className="w-full bg-pink-600 hover:bg-pink-700 text-white"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                View All Self-Care Resources
+              </Button>
+            )}
           </div>
         </Card>
       </div>

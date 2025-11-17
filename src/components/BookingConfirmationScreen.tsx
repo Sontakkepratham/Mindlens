@@ -1,16 +1,18 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { CheckCircle2, Calendar, Clock, Video, Shield, Lock, Database } from 'lucide-react';
+import { CheckCircle2, Calendar, Clock, Video, Shield, Lock, Database, Heart } from 'lucide-react';
 
 interface BookingConfirmationScreenProps {
   counselorName: string;
   onComplete: () => void;
+  onViewSelfCare?: () => void;
 }
 
 export function BookingConfirmationScreen({
   counselorName,
   onComplete,
+  onViewSelfCare,
 }: BookingConfirmationScreenProps) {
   const sessionDetails = {
     date: 'Tomorrow, Nov 18, 2025',
@@ -201,6 +203,15 @@ export function BookingConfirmationScreen({
         >
           Return to Dashboard
         </Button>
+        {onViewSelfCare && (
+          <Button
+            onClick={onViewSelfCare}
+            className="w-full bg-pink-600 hover:bg-pink-700 text-white mt-2"
+          >
+            <Heart className="w-5 h-5 mr-2" />
+            View Self-Care Tips
+          </Button>
+        )}
       </div>
     </div>
   );
