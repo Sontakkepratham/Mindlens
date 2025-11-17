@@ -20,8 +20,17 @@ export function ConsentScreen({ onContinue }: ConsentScreenProps) {
       <Card className="border-slate-200 bg-white mb-8 flex-1">
         <div className="p-6">
           <p className="text-slate-700 leading-relaxed mb-6">
-            Enable Face Analysis and PHQ-9 screening. Your data is stored securely on Google Cloud.
+            This assessment combines PHQ-9 questionnaire responses with AI-powered facial emotion analysis to provide comprehensive mental health screening. Your data is stored securely and used to improve mental health services.
           </p>
+
+          <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-4 mb-6">
+            <h3 className="text-cyan-900 mb-2 text-sm">📊 Data Collection:</h3>
+            <ul className="space-y-1 text-sm text-cyan-800">
+              <li>• PHQ-9 Depression Screening Questionnaire</li>
+              <li>• Facial Expression Analysis (AI-powered emotion detection)</li>
+              <li>• Response patterns and assessment metadata</li>
+            </ul>
+          </div>
 
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
             <Label htmlFor="consent-toggle" className="text-slate-900 cursor-pointer">

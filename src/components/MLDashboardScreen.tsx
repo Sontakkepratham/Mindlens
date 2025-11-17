@@ -79,13 +79,40 @@ export function MLDashboardScreen({ onBack }: MLDashboardScreenProps) {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-6">
-        <AlertCircle className="w-12 h-12 text-red-600 mb-4" />
-        <h3 className="text-slate-900 mb-2">Error Loading Dashboard</h3>
-        <p className="text-slate-600 mb-4 text-center">{error}</p>
-        <Button onClick={loadData} variant="outline">
-          Retry
+      <div className="flex flex-col min-h-screen px-6 py-8">
+        <Button 
+          variant="ghost" 
+          onClick={onBack}
+          className="mb-6 text-slate-600"
+        >
+          ← Back
         </Button>
+        
+        <Card className="border-orange-200 bg-orange-50">
+          <div className="p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-orange-600 mt-0.5" />
+              <div>
+                <h3 className="text-orange-900 mb-2">Dashboard Unavailable</h3>
+                <p className="text-orange-800 text-sm mb-4">
+                  BigQuery configuration is required to access ML training data. This is optional for normal app usage.
+                </p>
+                <p className="text-orange-700 text-xs">
+                  Administrator note: BigQuery credentials need to be configured in Supabase environment variables.
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-2 mt-4">
+              <Button onClick={onBack} className="w-full bg-cyan-600 hover:bg-cyan-700 text-white">
+                Return to App
+              </Button>
+              <Button onClick={loadData} variant="outline" className="w-full">
+                Retry Connection
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
     );
   }

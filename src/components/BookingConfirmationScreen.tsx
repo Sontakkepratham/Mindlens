@@ -92,30 +92,21 @@ export function BookingConfirmationScreen({
         <Card className="border-slate-200 bg-white">
           <div className="p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Database className="w-5 h-5 text-slate-700" />
+              <Shield className="w-5 h-5 text-slate-700" />
               <h3 className="text-slate-900">Data Security</h3>
             </div>
             <div className="space-y-3 text-slate-700">
               <div className="flex items-start gap-2">
                 <span className="text-cyan-600 mt-1">•</span>
-                <div>
-                  <p className="text-slate-900">Google Cloud Storage</p>
-                  <p className="text-slate-600">Encrypted at rest with customer-managed keys</p>
-                </div>
+                <p className="text-slate-700">All data encrypted and stored securely</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-cyan-600 mt-1">•</span>
-                <div>
-                  <p className="text-slate-900">BigQuery Analytics</p>
-                  <p className="text-slate-600">De-identified data for research (opt-in only)</p>
-                </div>
+                <p className="text-slate-700">HIPAA-compliant data handling</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-cyan-600 mt-1">•</span>
-                <div>
-                  <p className="text-slate-900">Vertex AI Processing</p>
-                  <p className="text-slate-600">Emotion analysis runs in secure, isolated environment</p>
-                </div>
+                <p className="text-slate-700">Your privacy is our top priority</p>
               </div>
             </div>
           </div>

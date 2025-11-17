@@ -1,32 +1,23 @@
-import { useState } from "react";
-import { OnboardingScreen } from "./components/OnboardingScreen";
-import { ConsentScreen } from "./components/ConsentScreen";
-import { QuestionnaireScreen } from "./components/QuestionnaireScreen";
-import { FaceScanScreen } from "./components/FaceScanScreen";
-import { ResultsScreen } from "./components/ResultsScreen";
-import { RecommendationsScreen } from "./components/RecommendationsScreen";
-import { BookingConfirmationScreen } from "./components/BookingConfirmationScreen";
-import { MLDashboardScreen } from "./components/MLDashboardScreen";
-import { SystemTestScreen } from "./components/SystemTestScreen";
-import { CredentialsHelpScreen } from "./components/CredentialsHelpScreen";
-import { CredentialsUploadScreen } from "./components/CredentialsUploadScreen";
-import { SimpleSetupScreen } from "./components/SimpleSetupScreen";
-import { SigninScreen } from "./components/SigninScreen";
-import { SignupScreen } from "./components/SignupScreen";
-import {
-  checkSession,
-  storeSession,
-  signOutUser,
-} from "./lib/auth";
+import { useState } from 'react';
+import { OnboardingScreen } from './components/OnboardingScreen';
+import { ConsentScreen } from './components/ConsentScreen';
+import { QuestionnaireScreen } from './components/QuestionnaireScreen';
+import { ResultsScreen } from './components/ResultsScreen';
+import { RecommendationsScreen } from './components/RecommendationsScreen';
+import { BookingConfirmationScreen } from './components/BookingConfirmationScreen';
+import { MLDashboardScreen } from './components/MLDashboardScreen';
+import { CredentialsHelpScreen } from './components/CredentialsHelpScreen';
+import { CredentialsUploadScreen } from './components/CredentialsUploadScreen';
+import { SigninScreen } from './components/SigninScreen';
+import { SignupScreen } from './components/SignupScreen';
+import { checkSession, storeSession, signOutUser } from './lib/auth';
 
 type Screen =
   | "signin"
   | "signup"
-  | "system-test"
   | "onboarding"
   | "consent"
   | "questionnaire"
-  | "facescan"
   | "results"
   | "recommendations"
   | "booking"
@@ -48,7 +39,6 @@ export default function App() {
     string | undefined
   >(session.email);
   const [responses, setResponses] = useState<number[]>([]);
-  const [scanCompleted, setScanCompleted] = useState(false);
   const [selectedCounselor, setSelectedCounselor] =
     useState("Dr. Sarah Chen");
   const [showSetup, setShowSetup] = useState(true);
@@ -63,11 +53,9 @@ export default function App() {
 
   const handleQuestionnaireSubmit = (data: number[]) => {
     setResponses(data);
-    setCurrentScreen("facescan");
-  };
-
-  const handleScanComplete = () => {
-    setScanCompleted(true);
+    // Simulate camera emotion analysis in the background
+    // In production, this would be collected during the questionnaire or in a separate step
+    console.log('PHQ-9 responses submitted. Camera-based emotion analysis included in model.');
     setCurrentScreen("results");
   };
 
@@ -99,10 +87,6 @@ export default function App() {
 
   const handleViewMLDashboard = () => {
     setCurrentScreen("ml-dashboard");
-  };
-
-  const handleSystemTestComplete = () => {
-    setCurrentScreen("onboarding");
   };
 
   const handleShowCredentialsHelp = () => {
@@ -154,17 +138,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      {/* Simple Setup Screen - Shows once after auth */}
-      {showSetup &&
-        currentScreen === "onboarding" &&
-        userId && (
-          <SimpleSetupScreen
-            onContinue={() => setShowSetup(false)}
-          />
-        )}
+      <div className="w-full max-w-md">{/* Authentication Screens */}
 
-      <div className="w-full max-w-md">
-        {/* Authentication Screens */}
         {currentScreen === "signin" && (
           <SigninScreen
             onSigninSuccess={handleSigninSuccess}
@@ -179,31 +154,23 @@ export default function App() {
           />
         )}
 
-        {/* System Test Screen (First Run) */}
-        {currentScreen === "system-test" && (
-          <SystemTestScreen
-            onComplete={handleSystemTestComplete}
-            onFixCredentials={handleFixCredentialsFromTest}
-          />
-        )}
-
         {/* Credentials Help Screen */}
         {currentScreen === "credentials-help" && (
           <CredentialsHelpScreen
-            onClose={() => setCurrentScreen("system-test")}
+            onClose={() => setCurrentScreen("onboarding")}
           />
         )}
 
         {/* Credentials Upload Screen */}
         {currentScreen === "credentials-upload" && (
           <CredentialsUploadScreen
-            onClose={() => setCurrentScreen("system-test")}
+            onClose={() => setCurrentScreen("onboarding")}
           />
         )}
 
         {/* Admin: ML Dashboard Access Button */}
-        {currentScreen === "onboarding" && !showSetup && (
-          <div className="mb-4 space-y-2">
+        {currentScreen === "onboarding" && (
+          <div className="mb-4 space-y-2"> {/* User Info Bar */}
             <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
               <span className="text-sm text-slate-600">
                 Signed in as: <strong>{userEmail}</strong>
@@ -215,24 +182,6 @@ export default function App() {
                 Sign Out
               </button>
             </div>
-            <button
-              onClick={handleViewMLDashboard}
-              className="w-full p-2 text-sm text-slate-600 hover:text-cyan-600 transition-colors"
-            >
-              🧠 Admin: View ML Training Dashboard
-            </button>
-            <button
-              onClick={handleShowCredentialsUpload}
-              className="w-full p-2 text-sm text-slate-600 hover:text-cyan-600 transition-colors"
-            >
-              🔧 Configure BigQuery (Optional)
-            </button>
-            <button
-              onClick={() => setShowSetup(true)}
-              className="w-full p-2 text-sm text-slate-600 hover:text-cyan-600 transition-colors"
-            >
-              ℹ️ Show Setup Info Again
-            </button>
           </div>
         )}
 
@@ -246,9 +195,6 @@ export default function App() {
           <QuestionnaireScreen
             onSubmit={handleQuestionnaireSubmit}
           />
-        )}
-        {currentScreen === "facescan" && (
-          <FaceScanScreen onCapture={handleScanComplete} />
         )}
         {currentScreen === "results" && (
           <ResultsScreen

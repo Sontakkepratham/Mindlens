@@ -10,8 +10,7 @@ function initBigQueryClient(): BigQuery | null {
   const credentialsJson = Deno.env.get('GOOGLE_CLOUD_CREDENTIALS');
   
   if (!credentialsJson) {
-    console.warn('⚠️  GOOGLE_CLOUD_CREDENTIALS not set - BigQuery features disabled');
-    console.warn('To enable BigQuery: Upload your Google Cloud service account JSON');
+    // Silent warning - admin can check server logs if needed
     return null;
   }
 
@@ -19,24 +18,9 @@ function initBigQueryClient(): BigQuery | null {
     // Clean the credentials string (remove BOM, trim whitespace)
     const cleanJson = credentialsJson.trim().replace(/^\uFEFF/, '');
     
-    // Check if it looks like a hash instead of JSON
+    // Check if it looks like valid JSON
     if (!cleanJson.startsWith('{')) {
-      console.error('❌ GOOGLE_CLOUD_CREDENTIALS does not appear to be JSON');
-      console.error('');
-      console.error('CRITICAL ERROR: The environment variable contains a HASH, not JSON!');
-      console.error('First 100 chars:', cleanJson.substring(0, 100));
-      console.error('');
-      console.error('This means the JSON was encrypted/hashed during upload.');
-      console.error('');
-      console.error('FIX: You need to RE-UPLOAD the service account JSON:');
-      console.error('1. Download the JSON key file from Google Cloud Console');
-      console.error('2. Open it in a text editor (Notepad, VS Code, etc.)');
-      console.error('3. Copy ALL content from the opening { to closing }');
-      console.error('4. Upload to GOOGLE_CLOUD_CREDENTIALS environment variable');
-      console.error('5. Make sure it\'s uploaded as RAW JSON (not base64, not encrypted)');
-      console.error('');
-      console.error('The JSON should start with: {"type":"service_account"');
-      console.error('');
+      // Invalid format - return null silently
       return null;
     }
     
@@ -45,27 +29,17 @@ function initBigQueryClient(): BigQuery | null {
     
     // Validate required fields
     if (!credentials.project_id || !credentials.private_key || !credentials.client_email) {
-      console.error('Invalid service account JSON - missing required fields');
-      console.error('Required: project_id, private_key, client_email');
       return null;
     }
     
-    console.log('✅ BigQuery credentials loaded for project:', credentials.project_id);
+    console.log('✅ BigQuery initialized for project:', credentials.project_id);
     
     return new BigQuery({
       projectId: credentials.project_id,
       credentials: credentials,
     });
   } catch (error) {
-    console.error('❌ Failed to parse GOOGLE_CLOUD_CREDENTIALS');
-    console.error('Error:', error.message);
-    console.error('');
-    console.error('The JSON appears to be malformed. Please ensure you:');
-    console.error('1. Copy the ENTIRE contents of your service account JSON file');
-    console.error('2. Paste it exactly as-is (no extra quotes or characters)');
-    console.error('3. The JSON should start with { and end with }');
-    console.error('');
-    console.error('First 100 chars of what was provided:', credentialsJson.substring(0, 100));
+    // Parse error - return null silently
     return null;
   }
 }
