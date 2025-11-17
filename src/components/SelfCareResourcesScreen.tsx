@@ -19,7 +19,10 @@ import {
   Flower2,
   ChevronRight,
   ChevronLeft,
-  X
+  X,
+  Globe,
+  Calendar,
+  Video
 } from 'lucide-react';
 
 interface SelfCareResourcesScreenProps {
@@ -36,6 +39,7 @@ type ResourceCategory =
   | 'sleep'
   | 'nutrition'
   | 'connection'
+  | 'support-groups'
   | 'education';
 
 export function SelfCareResourcesScreen({ onBack }: SelfCareResourcesScreenProps) {
@@ -122,6 +126,15 @@ export function SelfCareResourcesScreen({ onBack }: SelfCareResourcesScreenProps
       bgColor: 'bg-pink-50',
       borderColor: 'border-pink-200',
       description: 'Build supportive relationships'
+    },
+    {
+      id: 'support-groups' as ResourceCategory,
+      title: 'Support Groups',
+      icon: Globe,
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-50',
+      borderColor: 'border-teal-200',
+      description: 'Connect with others facing similar challenges'
     },
     {
       id: 'education' as ResourceCategory,
@@ -492,6 +505,343 @@ export function SelfCareResourcesScreen({ onBack }: SelfCareResourcesScreenProps
                 <li>• Mental Health America communities</li>
                 <li>• Online peer support forums</li>
               </ul>
+            </Card>
+          </div>
+        );
+
+      case 'support-groups':
+        return (
+          <div className="space-y-4">
+            {/* Global/Online Support Groups */}
+            <Card className="border-teal-200 bg-teal-50 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Globe className="w-5 h-5 text-teal-700" />
+                <h4 className="text-teal-900">🌍 Global Online Groups</h4>
+              </div>
+              <p className="text-teal-800 text-sm mb-4">
+                Join virtual meetings from anywhere - connect with people worldwide
+              </p>
+              <div className="space-y-3">
+                <div className="bg-white rounded p-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="text-slate-900">NAMI Connection</p>
+                    <Badge className="bg-teal-600 text-white text-xs">Free</Badge>
+                  </div>
+                  <p className="text-slate-600 text-xs mb-2">Peer-led support for mental health recovery</p>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Video className="w-3 h-3" />
+                    <span>Weekly virtual meetings</span>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded p-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="text-slate-900">7 Cups Online Community</p>
+                    <Badge className="bg-teal-600 text-white text-xs">24/7</Badge>
+                  </div>
+                  <p className="text-slate-600 text-xs mb-2">Anonymous peer support chat rooms</p>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <MessageSquare className="w-3 h-3" />
+                    <span>Text-based support</span>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded p-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="text-slate-900">Depression & Bipolar Support Alliance</p>
+                    <Badge className="bg-teal-600 text-white text-xs">Free</Badge>
+                  </div>
+                  <p className="text-slate-600 text-xs mb-2">Weekly online support groups for depression, bipolar, anxiety</p>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Calendar className="w-3 h-3" />
+                    <span>Multiple time zones available</span>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded p-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="text-slate-900">r/mentalhealth Community</p>
+                    <Badge className="bg-purple-600 text-white text-xs">Reddit</Badge>
+                  </div>
+                  <p className="text-slate-600 text-xs mb-2">Peer support forum with 800k+ members</p>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Users className="w-3 h-3" />
+                    <span>Active community, moderated discussions</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* North America */}
+            <Card className="border-slate-200 bg-white p-4">
+              <h4 className="text-slate-900 mb-3">🇺🇸 🇨🇦 North America</h4>
+              <div className="space-y-3">
+                <div className="border-l-4 border-cyan-600 pl-3">
+                  <p className="text-slate-900 text-sm">Mental Health America (MHA)</p>
+                  <p className="text-slate-600 text-xs mb-1">Local affiliates across all 50 US states</p>
+                  <p className="text-slate-500 text-xs">Find local groups at mentalhealthamerica.net</p>
+                </div>
+                
+                <div className="border-l-4 border-cyan-600 pl-3">
+                  <p className="text-slate-900 text-sm">NAMI (National Alliance on Mental Illness)</p>
+                  <p className="text-slate-600 text-xs mb-1">600+ local chapters in US & Canada</p>
+                  <p className="text-slate-500 text-xs">Free peer support groups, family support</p>
+                </div>
+
+                <div className="border-l-4 border-cyan-600 pl-3">
+                  <p className="text-slate-900 text-sm">Anxiety and Depression Association</p>
+                  <p className="text-slate-600 text-xs mb-1">Virtual support groups across time zones</p>
+                  <p className="text-slate-500 text-xs">Specialized groups for different conditions</p>
+                </div>
+
+                <div className="border-l-4 border-cyan-600 pl-3">
+                  <p className="text-slate-900 text-sm">Canadian Mental Health Association</p>
+                  <p className="text-slate-600 text-xs mb-1">Provincial chapters across Canada</p>
+                  <p className="text-slate-500 text-xs">Bilingual support (English/French)</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Europe */}
+            <Card className="border-slate-200 bg-white p-4">
+              <h4 className="text-slate-900 mb-3">🇪🇺 Europe</h4>
+              <div className="space-y-3">
+                <div className="border-l-4 border-blue-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇬🇧 Mind (UK)</p>
+                  <p className="text-slate-600 text-xs mb-1">Local Mind groups across England & Wales</p>
+                  <p className="text-slate-500 text-xs">Peer support, activity groups, online forums</p>
+                </div>
+
+                <div className="border-l-4 border-blue-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇩🇪 SeeleFon (Germany)</p>
+                  <p className="text-slate-600 text-xs mb-1">German-language peer support helpline & groups</p>
+                  <p className="text-slate-500 text-xs">Regional self-help groups across Germany</p>
+                </div>
+
+                <div className="border-l-4 border-blue-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇫🇷 Psycom (France)</p>
+                  <p className="text-slate-600 text-xs mb-1">French mental health peer support network</p>
+                  <p className="text-slate-500 text-xs">Groups d'entraide in major cities</p>
+                </div>
+
+                <div className="border-l-4 border-blue-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇳🇱 MIND Korrelatie (Netherlands)</p>
+                  <p className="text-slate-600 text-xs mb-1">Dutch peer support organization</p>
+                  <p className="text-slate-500 text-xs">Online chat support & regional meetings</p>
+                </div>
+
+                <div className="border-l-4 border-blue-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇸🇪 NSPH (Sweden)</p>
+                  <p className="text-slate-600 text-xs mb-1">Swedish national suicide prevention network</p>
+                  <p className="text-slate-500 text-xs">Support groups in Stockholm, Gothenburg, Malmö</p>
+                </div>
+
+                <div className="border-l-4 border-blue-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇮🇪 Mental Health Ireland</p>
+                  <p className="text-slate-600 text-xs mb-1">Community mental health associations</p>
+                  <p className="text-slate-500 text-xs">Groups across all 26 counties</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Asia-Pacific */}
+            <Card className="border-slate-200 bg-white p-4">
+              <h4 className="text-slate-900 mb-3">🌏 Asia-Pacific</h4>
+              <div className="space-y-3">
+                <div className="border-l-4 border-amber-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇦🇺 SANE Australia</p>
+                  <p className="text-slate-600 text-xs mb-1">Online forums and peer support groups</p>
+                  <p className="text-slate-500 text-xs">24/7 online community, local meetings</p>
+                </div>
+
+                <div className="border-l-4 border-amber-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇳🇿 Mental Health Foundation NZ</p>
+                  <p className="text-slate-600 text-xs mb-1">Peer support services across New Zealand</p>
+                  <p className="text-slate-500 text-xs">English & Te Reo Māori support</p>
+                </div>
+
+                <div className="border-l-4 border-amber-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇯🇵 Kokoro no Kenko (Japan)</p>
+                  <p className="text-slate-600 text-xs mb-1">Japanese mental health peer support</p>
+                  <p className="text-slate-500 text-xs">Groups in Tokyo, Osaka, Kyoto, Fukuoka</p>
+                </div>
+
+                <div className="border-l-4 border-amber-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇮🇳 White Swan Foundation (India)</p>
+                  <p className="text-slate-600 text-xs mb-1">Mental health peer support network</p>
+                  <p className="text-slate-500 text-xs">Groups in Delhi, Mumbai, Bangalore, Chennai</p>
+                </div>
+
+                <div className="border-l-4 border-amber-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇸🇬 Singapore Association for Mental Health</p>
+                  <p className="text-slate-600 text-xs mb-1">Community mental health support</p>
+                  <p className="text-slate-500 text-xs">Multilingual support (English, Mandarin, Malay, Tamil)</p>
+                </div>
+
+                <div className="border-l-4 border-amber-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇰🇷 Korea Suicide Prevention Center</p>
+                  <p className="text-slate-600 text-xs mb-1">Peer support groups across South Korea</p>
+                  <p className="text-slate-500 text-xs">Korean language support, survivor groups</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Latin America */}
+            <Card className="border-slate-200 bg-white p-4">
+              <h4 className="text-slate-900 mb-3">🌎 Latin America</h4>
+              <div className="space-y-3">
+                <div className="border-l-4 border-green-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇲🇽 Voz Pro Salud Mental (Mexico)</p>
+                  <p className="text-slate-600 text-xs mb-1">Mexican mental health advocacy & support</p>
+                  <p className="text-slate-500 text-xs">Groups in Mexico City, Guadalajara, Monterrey</p>
+                </div>
+
+                <div className="border-l-4 border-green-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇧🇷 CVV (Brazil)</p>
+                  <p className="text-slate-600 text-xs mb-1">Brazilian emotional support volunteer network</p>
+                  <p className="text-slate-500 text-xs">Portuguese language support groups nationwide</p>
+                </div>
+
+                <div className="border-l-4 border-green-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇦🇷 Red Argentina de Salud Mental</p>
+                  <p className="text-slate-600 text-xs mb-1">Argentine mental health support network</p>
+                  <p className="text-slate-500 text-xs">Groups in Buenos Aires, Córdoba, Rosario</p>
+                </div>
+
+                <div className="border-l-4 border-green-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇨🇱 Fundación Todo Mejora (Chile)</p>
+                  <p className="text-slate-600 text-xs mb-1">Mental health support for youth & adults</p>
+                  <p className="text-slate-500 text-xs">Online chat support & Santiago meetups</p>
+                </div>
+
+                <div className="border-l-4 border-green-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇨🇴 Liga Colombiana Contra la Depresión</p>
+                  <p className="text-slate-600 text-xs mb-1">Colombian depression support league</p>
+                  <p className="text-slate-500 text-xs">Support groups in Bogotá, Medellín, Cali</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Africa & Middle East */}
+            <Card className="border-slate-200 bg-white p-4">
+              <h4 className="text-slate-900 mb-3">🌍 Africa & Middle East</h4>
+              <div className="space-y-3">
+                <div className="border-l-4 border-purple-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇿🇦 South African Depression & Anxiety Group</p>
+                  <p className="text-slate-600 text-xs mb-1">SADAG - Africa's largest mental health NGO</p>
+                  <p className="text-slate-500 text-xs">Support groups in Johannesburg, Cape Town, Durban</p>
+                </div>
+
+                <div className="border-l-4 border-purple-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇰🇪 Kenya Mental Health Network</p>
+                  <p className="text-slate-600 text-xs mb-1">Peer support & advocacy in Kenya</p>
+                  <p className="text-slate-500 text-xs">Groups in Nairobi, Mombasa, Kisumu</p>
+                </div>
+
+                <div className="border-l-4 border-purple-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇦🇪 Lighthouse Arabia (UAE)</p>
+                  <p className="text-slate-600 text-xs mb-1">Mental health support in Dubai & Abu Dhabi</p>
+                  <p className="text-slate-500 text-xs">English & Arabic support groups</p>
+                </div>
+
+                <div className="border-l-4 border-purple-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇮🇱 ERAN (Israel)</p>
+                  <p className="text-slate-600 text-xs mb-1">Israeli emotional first aid helpline & groups</p>
+                  <p className="text-slate-500 text-xs">Hebrew, Arabic, Russian, Amharic support</p>
+                </div>
+
+                <div className="border-l-4 border-purple-600 pl-3">
+                  <p className="text-slate-900 text-sm">🇪🇬 Egyptian Mental Health Association</p>
+                  <p className="text-slate-600 text-xs mb-1">Arabic-language peer support</p>
+                  <p className="text-slate-500 text-xs">Groups in Cairo, Alexandria, Giza</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Specialized Support Groups */}
+            <Card className="border-slate-200 bg-white p-4">
+              <h4 className="text-slate-900 mb-3">🎯 Specialized Support Groups</h4>
+              <div className="space-y-3">
+                <div className="border-l-4 border-pink-600 pl-3">
+                  <p className="text-slate-900 text-sm">LGBTQ+ Mental Health</p>
+                  <p className="text-slate-600 text-xs mb-1">Trevor Project, PFLAG, LGBT Foundation</p>
+                  <p className="text-slate-500 text-xs">Safe spaces for LGBTQ+ individuals</p>
+                </div>
+
+                <div className="border-l-4 border-pink-600 pl-3">
+                  <p className="text-slate-900 text-sm">Veterans & Military</p>
+                  <p className="text-slate-600 text-xs mb-1">Veterans Crisis Line support groups</p>
+                  <p className="text-slate-500 text-xs">PTSD, combat stress, transition support</p>
+                </div>
+
+                <div className="border-l-4 border-pink-600 pl-3">
+                  <p className="text-slate-900 text-sm">Postpartum Support International</p>
+                  <p className="text-slate-600 text-xs mb-1">Support for perinatal mental health</p>
+                  <p className="text-slate-500 text-xs">Online support groups for new parents</p>
+                </div>
+
+                <div className="border-l-4 border-pink-600 pl-3">
+                  <p className="text-slate-900 text-sm">Bereaved by Suicide Groups</p>
+                  <p className="text-slate-600 text-xs mb-1">Support for suicide loss survivors</p>
+                  <p className="text-slate-500 text-xs">American Foundation for Suicide Prevention</p>
+                </div>
+
+                <div className="border-l-4 border-pink-600 pl-3">
+                  <p className="text-slate-900 text-sm">Dual Diagnosis Support</p>
+                  <p className="text-slate-600 text-xs mb-1">Mental health + substance use recovery</p>
+                  <p className="text-slate-500 text-xs">SMART Recovery, Double Trouble in Recovery</p>
+                </div>
+
+                <div className="border-l-4 border-pink-600 pl-3">
+                  <p className="text-slate-900 text-sm">Young Adults Mental Health</p>
+                  <p className="text-slate-600 text-xs mb-1">Age 18-30 peer support groups</p>
+                  <p className="text-slate-500 text-xs">College students, early career professionals</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* How to Get Started */}
+            <Card className="border-teal-200 bg-teal-50 p-4">
+              <h4 className="text-teal-900 mb-3">💡 How to Get Started</h4>
+              <ol className="space-y-2 text-teal-800 text-sm list-decimal list-inside">
+                <li>Choose a group type that fits your needs</li>
+                <li>Try 3-4 different groups before deciding</li>
+                <li>No pressure to share on your first visit</li>
+                <li>Most groups are free and confidential</li>
+                <li>Virtual options available if you prefer online</li>
+                <li>Bring a friend if it makes you more comfortable</li>
+              </ol>
+            </Card>
+
+            {/* Benefits */}
+            <Card className="border-slate-200 bg-white p-4">
+              <h4 className="text-slate-900 mb-3">✨ Benefits of Support Groups</h4>
+              <div className="grid gap-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-teal-600 text-lg">•</span>
+                  <p className="text-slate-700 text-sm">Feel less alone - connect with others who understand</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-teal-600 text-lg">•</span>
+                  <p className="text-slate-700 text-sm">Learn coping strategies from peers' experiences</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-teal-600 text-lg">•</span>
+                  <p className="text-slate-700 text-sm">Share your journey in a safe, judgment-free space</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-teal-600 text-lg">•</span>
+                  <p className="text-slate-700 text-sm">Build lasting friendships and social support</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-teal-600 text-lg">•</span>
+                  <p className="text-slate-700 text-sm">Find hope through others' recovery stories</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-teal-600 text-lg">•</span>
+                  <p className="text-slate-700 text-sm">Stay motivated on your healing journey</p>
+                </div>
+              </div>
             </Card>
           </div>
         );

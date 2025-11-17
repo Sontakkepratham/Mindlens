@@ -1,17 +1,24 @@
-import { useState } from 'react';
-import { OnboardingScreen } from './components/OnboardingScreen';
-import { ConsentScreen } from './components/ConsentScreen';
-import { QuestionnaireScreen } from './components/QuestionnaireScreen';
-import { ResultsScreen } from './components/ResultsScreen';
-import { RecommendationsScreen } from './components/RecommendationsScreen';
-import { BookingConfirmationScreen } from './components/BookingConfirmationScreen';
-import { SelfCareResourcesScreen } from './components/SelfCareResourcesScreen';
-import { MLDashboardScreen } from './components/MLDashboardScreen';
-import { CredentialsHelpScreen } from './components/CredentialsHelpScreen';
-import { CredentialsUploadScreen } from './components/CredentialsUploadScreen';
-import { SigninScreen } from './components/SigninScreen';
-import { SignupScreen } from './components/SignupScreen';
-import { checkSession, storeSession, signOutUser } from './lib/auth';
+import { useState } from "react";
+import { OnboardingScreen } from "./components/OnboardingScreen";
+import { ConsentScreen } from "./components/ConsentScreen";
+import { QuestionnaireScreen } from "./components/QuestionnaireScreen";
+import { ResultsScreen } from "./components/ResultsScreen";
+import { RecommendationsScreen } from "./components/RecommendationsScreen";
+import { BookingConfirmationScreen } from "./components/BookingConfirmationScreen";
+import { SelfCareResourcesScreen } from "./components/SelfCareResourcesScreen";
+import { PersonalityTestScreen } from "./components/PersonalityTestScreen";
+import { PersonalityResultsScreen } from "./components/PersonalityResultsScreen";
+import type { PersonalityResults } from "./components/PersonalityTestScreen";
+import { MLDashboardScreen } from "./components/MLDashboardScreen";
+import { CredentialsHelpScreen } from "./components/CredentialsHelpScreen";
+import { CredentialsUploadScreen } from "./components/CredentialsUploadScreen";
+import { SigninScreen } from "./components/SigninScreen";
+import { SignupScreen } from "./components/SignupScreen";
+import {
+  checkSession,
+  storeSession,
+  signOutUser,
+} from "./lib/auth";
 
 type Screen =
   | "signin"
@@ -23,6 +30,8 @@ type Screen =
   | "recommendations"
   | "booking"
   | "self-care"
+  | "personality-test"
+  | "personality-results"
   | "ml-dashboard"
   | "credentials-help"
   | "credentials-upload";
@@ -44,6 +53,8 @@ export default function App() {
   const [selectedCounselor, setSelectedCounselor] =
     useState("Dr. Sarah Chen");
   const [showSetup, setShowSetup] = useState(true);
+  const [personalityResults, setPersonalityResults] =
+    useState<PersonalityResults | undefined>(undefined);
 
   const handleStartAssessment = () => {
     setCurrentScreen("consent");
@@ -57,7 +68,9 @@ export default function App() {
     setResponses(data);
     // Simulate camera emotion analysis in the background
     // In production, this would be collected during the questionnaire or in a separate step
-    console.log('PHQ-9 responses submitted. Camera-based emotion analysis included in model.');
+    console.log(
+      "PHQ-9 responses submitted. Camera-based emotion analysis included in model.",
+    );
     setCurrentScreen("results");
   };
 
@@ -142,9 +155,21 @@ export default function App() {
     setCurrentScreen("self-care");
   };
 
+  const handleStartPersonalityTest = () => {
+    setCurrentScreen("personality-test");
+  };
+
+  const handlePersonalityTestSubmit = (
+    results: PersonalityResults,
+  ) => {
+    setPersonalityResults(results);
+    setCurrentScreen("personality-results");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">{/* Authentication Screens */}
+      <div className="w-full max-w-md">
+        {/* Authentication Screens */}
 
         {currentScreen === "signin" && (
           <SigninScreen
@@ -176,7 +201,9 @@ export default function App() {
 
         {/* Admin: ML Dashboard Access Button */}
         {currentScreen === "onboarding" && (
-          <div className="mb-4 space-y-2"> {/* User Info Bar */}
+          <div className="mb-4 space-y-2">
+            {" "}
+            {/* User Info Bar */}
             <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
               <span className="text-sm text-slate-600">
                 Signed in as: <strong>{userEmail}</strong>
@@ -192,7 +219,10 @@ export default function App() {
         )}
 
         {currentScreen === "onboarding" && (
-          <OnboardingScreen onStart={handleStartAssessment} />
+          <OnboardingScreen 
+            onStart={handleStartAssessment}
+            onStartPersonalityTest={handleStartPersonalityTest}
+          />
         )}
         {currentScreen === "consent" && (
           <ConsentScreen onContinue={handleConsentContinue} />
@@ -237,6 +267,19 @@ export default function App() {
         {currentScreen === "self-care" && (
           <SelfCareResourcesScreen
             onBack={() => setCurrentScreen("onboarding")}
+          />
+        )}
+        {currentScreen === "personality-test" && (
+          <PersonalityTestScreen
+            onComplete={handlePersonalityTestSubmit}
+            onBack={() => setCurrentScreen("onboarding")}
+          />
+        )}
+        {currentScreen === "personality-results" && personalityResults && (
+          <PersonalityResultsScreen
+            results={personalityResults}
+            onReturnHome={() => setCurrentScreen("onboarding")}
+            onRetakeTest={() => setCurrentScreen("personality-test")}
           />
         )}
       </div>
