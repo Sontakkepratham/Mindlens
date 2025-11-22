@@ -120,6 +120,55 @@ export async function signOutUser(): Promise<{ success: boolean }> {
 }
 
 /**
+ * Sign in with Google OAuth
+ * Note: Requires Google OAuth to be configured in Supabase dashboard
+ * See: https://supabase.com/docs/guides/auth/social-login/auth-google
+ */
+export async function signInWithGoogle(): Promise<AuthResponse & { email?: string }> {
+  try {
+    const response = await fetch(`${API_URL}/auth/google-signin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${publicAnonKey}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.error || 'Google sign in failed. Please ensure Google OAuth is configured in Supabase dashboard.',
+      };
+    }
+
+    // If we received an OAuth URL, open it in a popup or redirect
+    if (data.oauthUrl) {
+      // For now, show an informative message
+      // In a production app, you would redirect the user or open a popup
+      return {
+        success: false,
+        error: 'Google OAuth requires additional configuration. Please use email/password sign-in for now. To enable Google OAuth, configure it in your Supabase dashboard: https://supabase.com/docs/guides/auth/social-login/auth-google',
+      };
+    }
+
+    return {
+      success: true,
+      userId: data.userId,
+      accessToken: data.accessToken,
+      email: data.email,
+    };
+  } catch (error: any) {
+    console.error('Google sign in error:', error);
+    return {
+      success: false,
+      error: 'Google OAuth is not yet configured. Please use email/password sign-in.',
+    };
+  }
+}
+
+/**
  * Check if user has an active session
  */
 export function checkSession(): {

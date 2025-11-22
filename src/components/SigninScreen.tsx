@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert } from './ui/alert';
 import { Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
-import { signInUser } from '../lib/auth';
+import { signInUser, signInWithGoogle } from '../lib/auth';
 
 interface SigninScreenProps {
   onSigninSuccess: (userId: string, email: string) => void;
@@ -30,6 +30,25 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
         onSigninSuccess(result.userId, email);
       } else {
         setError(result.error || 'Sign in failed. Please check your credentials.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignin = async () => {
+    setError('');
+    setLoading(true);
+
+    try {
+      const result = await signInWithGoogle();
+      
+      if (result.success && result.userId && result.email) {
+        onSigninSuccess(result.userId, result.email);
+      } else {
+        setError(result.error || 'Google sign in failed. Please try again.');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -136,6 +155,21 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
               )}
             </Button>
           </form>
+        </Card>
+
+        {/* Google Sign In */}
+        <Card className="border-slate-200 bg-white">
+          <div className="p-5 text-center">
+            <p className="text-slate-600 mb-3">Or sign in with Google</p>
+            <Button
+              onClick={handleGoogleSignin}
+              variant="outline"
+              className="w-full border-slate-300"
+              disabled={loading}
+            >
+              Sign In with Google
+            </Button>
+          </div>
         </Card>
 
         {/* Switch to Signup */}

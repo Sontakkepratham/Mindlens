@@ -4,9 +4,11 @@ import { logger } from 'npm:hono/logger';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import * as kv from './kv_store.tsx';
 import * as bigquery from './bigquery-service.tsx';
+import * as encryption from './encryption-service.tsx';
 import mlApp from './ml-endpoints.tsx';
 import checkApp from './deploy-check.tsx';
 import authApp from './auth-endpoints.tsx';
+import exportApp from './data-export-endpoints.tsx';
 
 const app = new Hono();
 
@@ -19,6 +21,9 @@ app.route('/make-server-aa629e1b/check', checkApp);
 
 // Mount auth endpoints
 app.route('/make-server-aa629e1b/auth', authApp);
+
+// Mount data export endpoints
+app.route('/make-server-aa629e1b/export', exportApp);
 
 // Initialize BigQuery on server startup (non-blocking)
 bigquery.initializeBigQuery()
@@ -98,17 +103,28 @@ app.post('/make-server-aa629e1b/assessment/submit', async (c) => {
       vertexAiModelVersion: '2.1.0',
     };
 
-    // Store encrypted assessment data
-    const assessmentData = {
-      userId: user.id,
-      sessionId,
-      timestamp,
+    // **ENCRYPT SENSITIVE DATA BEFORE STORAGE**
+    const sensitiveData = {
       phqResponses,
       phqScore,
       emotionAnalysis,
+      faceScanData,
+      userId: user.id,
+    };
+
+    const encryptedData = await encryption.encrypt(sensitiveData);
+
+    // Store encrypted assessment data
+    const assessmentData = {
+      userId: await encryption.hashIdentifier(user.id), // Store hashed ID
+      sessionId,
+      timestamp,
+      encryptedData, // Encrypted sensitive fields
       encrypted: true,
       requiresImmediateAction,
       consentToResearch,
+      // Keep non-sensitive metadata unencrypted for queries
+      phqScore, // Needed for quick severity checks
     };
 
     await kv.set(`assessment:${sessionId}`, assessmentData);
@@ -534,6 +550,74 @@ app.post('/make-server-aa629e1b/emergency/trigger', async (c) => {
   } catch (error) {
     console.error('Emergency trigger error:', error);
     return c.json({ error: `Emergency trigger failed: ${error.message}` }, 500);
+  }
+});
+
+/**
+ * Stroop Test - Save Results
+ * Store emotional interference test results
+ */
+app.post('/make-server-aa629e1b/stroop/save', async (c) => {
+  try {
+    const {
+      difficulty,
+      totalTrials,
+      correctTrials,
+      errorRate,
+      avgReactionTime,
+      avgEmotionalRT,
+      avgNeutralRT,
+      negativeBias,
+      completedAt,
+      detailedResults,
+    } = await c.req.json();
+
+    if (!difficulty || !totalTrials) {
+      return c.json({ error: 'Missing required fields' }, 400);
+    }
+
+    // Generate result ID
+    const resultId = `STROOP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const timestamp = completedAt || new Date().toISOString();
+
+    // Store result data
+    const stroopResult = {
+      resultId,
+      timestamp,
+      difficulty,
+      totalTrials,
+      correctTrials,
+      errorRate,
+      avgReactionTime,
+      avgEmotionalRT,
+      avgNeutralRT,
+      negativeBias,
+      detailedResults,
+    };
+
+    await kv.set(`stroop:${resultId}`, stroopResult);
+
+    // Store in global history
+    const historyKey = 'stroop:all-results';
+    const allResults = (await kv.get(historyKey)) || [];
+    allResults.push(resultId);
+    await kv.set(historyKey, allResults);
+
+    console.log('✅ Stroop test result saved:', {
+      resultId,
+      difficulty,
+      avgReactionTime: Math.round(avgReactionTime),
+      negativeBias: Math.round(negativeBias),
+    });
+
+    return c.json({
+      success: true,
+      resultId,
+      message: 'Stroop test results saved successfully',
+    });
+  } catch (error) {
+    console.error('Stroop save error:', error);
+    return c.json({ error: `Failed to save Stroop results: ${error.message}` }, 500);
   }
 });
 

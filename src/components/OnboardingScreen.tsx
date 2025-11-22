@@ -1,15 +1,108 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { Brain, FileText, Camera, Sparkles } from 'lucide-react';
+import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon } from 'lucide-react';
+import React from 'react';
 
 interface OnboardingScreenProps {
   onStart: () => void;
   onStartPersonalityTest?: () => void;
+  onStartStroopTest?: () => void;
+  onViewProfile?: () => void;
+  onViewAboutUs?: () => void;
+  onViewConnectWithUs?: () => void;
+  onViewDetailedReport?: () => void;
 }
 
-export function OnboardingScreen({ onStart, onStartPersonalityTest }: OnboardingScreenProps) {
+export function OnboardingScreen({ 
+  onStart, 
+  onStartPersonalityTest, 
+  onStartStroopTest,
+  onViewProfile,
+  onViewAboutUs,
+  onViewConnectWithUs,
+  onViewDetailedReport
+}: OnboardingScreenProps) {
+  const [showDropdown, setShowDropdown] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
+
+  const handleDropdownItemClick = (action: () => void) => {
+    setShowDropdown(false);
+    action();
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center relative">
+      {/* Three-dot Menu */}
+      <div className="absolute top-0 right-0" ref={dropdownRef}>
+        <button
+          onClick={() => setShowDropdown(!showDropdown)}
+          className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+          aria-label="Menu"
+        >
+          <MoreVertical className="w-6 h-6 text-slate-600" />
+        </button>
+
+        {/* Dropdown Menu */}
+        {showDropdown && (
+          <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
+            {onViewProfile && (
+              <button
+                onClick={() => handleDropdownItemClick(onViewProfile)}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+              >
+                <User className="w-5 h-5 text-slate-600" />
+                <span className="text-slate-900">Profile Dashboard</span>
+              </button>
+            )}
+            {onViewDetailedReport && (
+              <button
+                onClick={() => handleDropdownItemClick(onViewDetailedReport)}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+              >
+                <ReportIcon className="w-5 h-5 text-slate-600" />
+                <span className="text-slate-900">View Detailed Report</span>
+              </button>
+            )}
+            <div className="border-t border-slate-200 my-2"></div>
+            {onViewAboutUs && (
+              <button
+                onClick={() => handleDropdownItemClick(onViewAboutUs)}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+              >
+                <Info className="w-5 h-5 text-slate-600" />
+                <span className="text-slate-900">About Us</span>
+              </button>
+            )}
+            {onViewConnectWithUs && (
+              <button
+                onClick={() => handleDropdownItemClick(onViewConnectWithUs)}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+              >
+                <MessageCircle className="w-5 h-5 text-slate-600" />
+                <span className="text-slate-900">Connect With Us</span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="mb-8">
         <div className="mb-3">
           <h1 className="text-cyan-600 mb-2">MindLens</h1>
@@ -91,6 +184,19 @@ export function OnboardingScreen({ onStart, onStartPersonalityTest }: Onboarding
             </div>
             <p className="text-sm text-purple-700">Take a free test</p>
           </button>
+
+          {onStartStroopTest && (
+            <button
+              onClick={onStartStroopTest}
+              className="w-full mt-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg hover:shadow-md transition-all group"
+            >
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Brain className="w-5 h-5 text-blue-600 group-hover:animate-pulse" />
+                <span className="text-slate-900">Emotional Stroop Test</span>
+              </div>
+              <p className="text-sm text-blue-700">Measure emotional interference</p>
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -14,6 +14,12 @@ import { CredentialsHelpScreen } from "./components/CredentialsHelpScreen";
 import { CredentialsUploadScreen } from "./components/CredentialsUploadScreen";
 import { SigninScreen } from "./components/SigninScreen";
 import { SignupScreen } from "./components/SignupScreen";
+import { StroopTest } from "./components/stroop/StroopTest";
+import { DetailedReportScreen } from "./components/DetailedReportScreen";
+import { ProfileDashboardScreen } from "./components/ProfileDashboardScreen";
+import { AboutUsScreen } from "./components/AboutUsScreen";
+import { ConnectWithUsScreen } from "./components/ConnectWithUsScreen";
+import type { ProfileData } from "./components/ProfileDashboardScreen";
 import {
   checkSession,
   storeSession,
@@ -34,7 +40,12 @@ type Screen =
   | "personality-results"
   | "ml-dashboard"
   | "credentials-help"
-  | "credentials-upload";
+  | "credentials-upload"
+  | "stroop-test"
+  | "detailed-report"
+  | "profile"
+  | "about-us"
+  | "connect-with-us";
 
 export default function App() {
   // Check for existing session on load
@@ -55,6 +66,7 @@ export default function App() {
   const [showSetup, setShowSetup] = useState(true);
   const [personalityResults, setPersonalityResults] =
     useState<PersonalityResults | undefined>(undefined);
+  const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
 
   const handleStartAssessment = () => {
     setCurrentScreen("consent");
@@ -166,6 +178,26 @@ export default function App() {
     setCurrentScreen("personality-results");
   };
 
+  const handleStartStroopTest = () => {
+    setCurrentScreen("stroop-test");
+  };
+
+  const handleViewDetailedReport = () => {
+    setCurrentScreen("detailed-report");
+  };
+
+  const handleViewProfile = () => {
+    setCurrentScreen("profile");
+  };
+
+  const handleViewAboutUs = () => {
+    setCurrentScreen("about-us");
+  };
+
+  const handleViewConnectWithUs = () => {
+    setCurrentScreen("connect-with-us");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -222,6 +254,11 @@ export default function App() {
           <OnboardingScreen 
             onStart={handleStartAssessment}
             onStartPersonalityTest={handleStartPersonalityTest}
+            onStartStroopTest={handleStartStroopTest}
+            onViewProfile={handleViewProfile}
+            onViewAboutUs={handleViewAboutUs}
+            onViewConnectWithUs={handleViewConnectWithUs}
+            onViewDetailedReport={responses.length > 0 ? handleViewDetailedReport : undefined}
           />
         )}
         {currentScreen === "consent" && (
@@ -280,6 +317,39 @@ export default function App() {
             results={personalityResults}
             onReturnHome={() => setCurrentScreen("onboarding")}
             onRetakeTest={() => setCurrentScreen("personality-test")}
+          />
+        )}
+        {currentScreen === "stroop-test" && (
+          <StroopTest
+            onBack={() => setCurrentScreen("onboarding")}
+          />
+        )}
+        {currentScreen === "detailed-report" && (
+          <DetailedReportScreen
+            phqScore={responses.reduce((a, b) => a + b, 0)}
+            responses={responses}
+            userEmail={userEmail}
+            onBack={() => setCurrentScreen("onboarding")}
+          />
+        )}
+        {currentScreen === "profile" && (
+          <ProfileDashboardScreen
+            userEmail={userEmail}
+            onBack={() => setCurrentScreen("onboarding")}
+            onSave={(data: ProfileData) => {
+              setProfileData(data);
+              console.log('Profile data saved:', data);
+            }}
+          />
+        )}
+        {currentScreen === "about-us" && (
+          <AboutUsScreen
+            onBack={() => setCurrentScreen("onboarding")}
+          />
+        )}
+        {currentScreen === "connect-with-us" && (
+          <ConnectWithUsScreen
+            onBack={() => setCurrentScreen("onboarding")}
           />
         )}
       </div>

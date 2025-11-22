@@ -18,7 +18,7 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Install dependencies first (for better caching)
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
@@ -35,16 +35,16 @@ RUN npm run build
 # ========================================
 FROM node:18-alpine AS production
 
+# Install serve globally to run the static files
+RUN npm install -g serve
+
 # Set working directory
 WORKDIR /app
-
-# Install serve to run the static files
-RUN npm install -g serve
 
 # Copy built assets from builder stage
 COPY --from=builder /app/dist /app/dist
 
-# Create a non-root user for security
+# Create a non-root user for security (HIPAA compliance)
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
@@ -54,13 +54,13 @@ RUN chown -R nodejs:nodejs /app
 # Switch to non-root user
 USER nodejs
 
-# Expose port 8080 (Cloud Run requirement)
+# Expose port 8080 (Google Cloud Run requirement)
 EXPOSE 8080
 
-# Health check
+# Health check endpoint
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start the application
-# Use single-page-application mode for React Router compatibility
+# Use single-page-application mode (-s) for React Router compatibility
 CMD ["serve", "-s", "dist", "-l", "8080"]

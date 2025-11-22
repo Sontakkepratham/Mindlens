@@ -32,23 +32,31 @@ authApp.post('/signup', async (c) => {
 
     console.log('Creating new user account:', email);
 
+    // Use client Supabase for signup (more reliable for password auth)
+    const clientSupabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+
     // Create user with Supabase Auth
-    const { data, error } = await supabase.auth.admin.createUser({
+    const { data, error } = await clientSupabase.auth.signUp({
       email,
       password,
-      user_metadata: { 
-        name: name || email.split('@')[0],
-        created_at: new Date().toISOString(),
+      options: {
+        data: {
+          name: name || email.split('@')[0],
+          created_at: new Date().toISOString(),
+        },
+        // Email confirmation will be handled by Supabase settings
+        emailRedirectTo: undefined,
       },
-      // Automatically confirm email since email server not configured
-      email_confirm: true,
     });
 
     if (error) {
       console.error('Signup error:', error);
       
       // Handle specific errors
-      if (error.message.includes('already registered')) {
+      if (error.message.includes('already registered') || error.message.includes('already exists')) {
         return c.json({ 
           error: 'This email is already registered. Please sign in instead.' 
         }, 409);
@@ -65,21 +73,45 @@ authApp.post('/signup', async (c) => {
 
     console.log('✅ User created successfully:', data.user.id);
 
-    // Generate session for the new user
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'signup',
-      email,
-      password,
-    });
+    // Check if we got a session (auto-confirmed) or need email confirmation
+    if (data.session) {
+      // User is auto-confirmed and signed in
+      return c.json({
+        success: true,
+        userId: data.user.id,
+        email: data.user.email,
+        accessToken: data.session.access_token,
+        message: 'Account created successfully',
+      });
+    } else {
+      // User needs email confirmation (but in dev mode, should be auto-confirmed)
+      // Sign them in anyway for the prototype
+      console.log('⚠️  No session returned, attempting signin...');
+      
+      const { data: signInData, error: signInError } = await clientSupabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    // Return user info
-    return c.json({
-      success: true,
-      userId: data.user.id,
-      email: data.user.email,
-      accessToken: sessionData?.properties?.access_token || 'auto-signin',
-      message: 'Account created successfully',
-    });
+      if (signInError || !signInData.session) {
+        console.error('Auto-signin after signup failed:', signInError);
+        return c.json({
+          success: true,
+          userId: data.user.id,
+          email: data.user.email,
+          accessToken: 'pending',
+          message: 'Account created. Please sign in to continue.',
+        });
+      }
+
+      return c.json({
+        success: true,
+        userId: signInData.user.id,
+        email: signInData.user.email,
+        accessToken: signInData.session.access_token,
+        message: 'Account created successfully',
+      });
+    }
 
   } catch (error: any) {
     console.error('Signup endpoint error:', error);
@@ -179,6 +211,63 @@ authApp.post('/signout', async (c) => {
       success: true, // Still return success since local signout works
       message: 'Signed out locally',
     });
+  }
+});
+
+/**
+ * Sign in with Google OAuth
+ * POST /auth/google-signin
+ * 
+ * NOTE: Requires Google OAuth to be configured in Supabase dashboard
+ * See: https://supabase.com/docs/guides/auth/social-login/auth-google
+ */
+authApp.post('/google-signin', async (c) => {
+  try {
+    console.log('Google OAuth signin attempt');
+
+    // Create a client-side Supabase instance for OAuth
+    const clientSupabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+
+    // Initiate Google OAuth sign in
+    const { data, error } = await clientSupabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${Deno.env.get('SUPABASE_URL')}/auth/v1/callback`,
+      },
+    });
+
+    if (error) {
+      console.error('Google OAuth error:', error);
+      
+      // Check if Google provider is not enabled
+      if (error.message.includes('provider') || error.message.includes('not enabled')) {
+        return c.json({ 
+          error: 'Google OAuth is not enabled. Please configure Google OAuth in your Supabase dashboard. Visit: https://supabase.com/docs/guides/auth/social-login/auth-google' 
+        }, 400);
+      }
+      
+      return c.json({ 
+        error: error.message || 'Google sign in failed' 
+      }, 400);
+    }
+
+    // OAuth returns a URL for the user to authenticate
+    // For server-side, we need to handle this differently
+    // Return the OAuth URL for the frontend to redirect
+    return c.json({
+      success: true,
+      oauthUrl: data.url,
+      message: 'Redirect to Google OAuth',
+    });
+
+  } catch (error: any) {
+    console.error('Google signin endpoint error:', error);
+    return c.json({ 
+      error: error.message || 'Server error during Google signin. Please ensure Google OAuth is configured in Supabase dashboard.' 
+    }, 500);
   }
 });
 
