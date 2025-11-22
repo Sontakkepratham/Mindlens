@@ -7,6 +7,7 @@ import { Checkbox } from './ui/checkbox';
 import { Alert } from './ui/alert';
 import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { signUpUser, signInWithGoogle, handleOAuthCallback, storeSession } from '../lib/auth';
+import mindlensLogo from 'figma:asset/cd1d8896983c70c4f2f82063f4b34137a63890b4.png';
 
 interface SignupScreenProps {
   onSignupSuccess: (userId: string, email: string, accessToken: string) => void;
@@ -81,22 +82,23 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 bg-slate-50 z-10 px-6 py-4 border-b border-slate-200">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
-            <span className="text-xl">🧠</span>
-          </div>
-          <h2 className="text-slate-900">Create Your MindLens Account</h2>
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Header with Logo */}
+      <div className="sticky top-0 bg-card z-10 px-6 py-6 border-b border-border shadow-sm">
+        <div className="flex flex-col items-center text-center">
+          <img 
+            src={mindlensLogo} 
+            alt="MindLens Logo" 
+            className="w-32 h-32 mb-2"
+          />
+          <p className="text-muted-foreground">Start your mental health journey today</p>
         </div>
-        <p className="text-slate-600">Start your mental health journey today</p>
       </div>
 
       <div className="flex-1 px-6 py-6 space-y-4">
         {/* Success Alert */}
         {success && (
-          <Alert className="border-green-200 bg-green-50">
+          <Alert className="border-green-500/20 bg-green-50">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
               <div>
@@ -111,22 +113,22 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
 
         {/* Error Alert */}
         {error && !success && (
-          <Alert className="border-red-200 bg-red-50">
+          <Alert className="border-destructive/20 bg-destructive/10">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
               <div>
-                <h3 className="text-red-900 mb-1">Sign Up Failed</h3>
-                <p className="text-red-800 text-sm">{error}</p>
+                <h3 className="text-destructive mb-1">Sign Up Failed</h3>
+                <p className="text-destructive text-sm">{error}</p>
               </div>
             </div>
           </Alert>
         )}
 
         {/* Privacy Notice */}
-        <Card className="border-cyan-200 bg-cyan-50">
+        <Card className="border-primary/20 bg-accent/30">
           <div className="p-5">
-            <h3 className="text-cyan-900 mb-2">🔒 Your Privacy Matters</h3>
-            <ul className="space-y-1 text-cyan-800 text-sm">
+            <h3 className="text-primary mb-2">🔒 Your Privacy Matters</h3>
+            <ul className="space-y-1 text-accent-foreground text-sm">
               <li>• AES-256 end-to-end encryption</li>
               <li>• HIPAA-compliant data storage</li>
               <li>• No sharing without explicit consent</li>
@@ -136,15 +138,15 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
         </Card>
 
         {/* Sign Up Form */}
-        <Card className="border-slate-200 bg-white">
+        <Card className="border-border bg-card shadow-sm">
           <form onSubmit={handleSignup} className="p-5 space-y-4">
             {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-900">
+              <Label htmlFor="name" className="text-card-foreground">
                 Full Name
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="name"
                   type="text"
@@ -160,11 +162,11 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
 
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-900">
+              <Label htmlFor="email" className="text-card-foreground">
                 Email Address
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
@@ -180,11 +182,11 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-900">
+              <Label htmlFor="password" className="text-card-foreground">
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type="password"
@@ -201,11 +203,11 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-slate-900">
+              <Label htmlFor="confirmPassword" className="text-card-foreground">
                 Confirm Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -221,20 +223,20 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
             </div>
 
             {/* Terms & Privacy */}
-            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded">
+            <div className="flex items-start gap-3 p-3 bg-muted rounded">
               <Checkbox
                 id="terms"
                 checked={agreeToTerms}
                 onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
                 disabled={loading || success}
               />
-              <label htmlFor="terms" className="text-sm text-slate-700 leading-relaxed cursor-pointer">
+              <label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
                 I agree to the{' '}
-                <a href="#" className="text-cyan-600 hover:underline">
+                <a href="#" className="text-primary hover:underline">
                   Privacy Policy
                 </a>{' '}
                 and{' '}
-                <a href="#" className="text-cyan-600 hover:underline">
+                <a href="#" className="text-primary hover:underline">
                   Terms of Service
                 </a>
                 , and consent to encrypted storage of my mental health data for clinical purposes.
@@ -244,7 +246,7 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
               disabled={loading || success}
             >
               {loading ? (
@@ -265,13 +267,13 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
         </Card>
 
         {/* Switch to Sign In */}
-        <Card className="border-slate-200 bg-white">
+        <Card className="border-border bg-card shadow-sm">
           <div className="p-5 text-center">
-            <p className="text-slate-600 mb-3">Already have an account?</p>
+            <p className="text-muted-foreground mb-3">Already have an account?</p>
             <Button
               onClick={onSwitchToSignin}
               variant="outline"
-              className="w-full border-slate-300"
+              className="w-full border-border hover:bg-accent"
               disabled={loading || success}
             >
               Sign In Instead

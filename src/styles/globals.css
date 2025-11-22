@@ -2,43 +2,52 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
+  
+  /* MindLens Brand Colors - Extracted from Logo */
+  --mindlens-primary-blue: #7B9FDB;        /* Soft periwinkle blue - main head color */
+  --mindlens-lavender: #D4D0F0;            /* Light lavender - eye shape */
+  --mindlens-navy: #3D5A80;                /* Deep navy - text and pupil */
+  --mindlens-light-blue: #A8C5E8;          /* Lighter accent blue */
+  --mindlens-deep-purple: #5E6FA3;         /* Mid-tone purple-blue */
+  
+  /* Semantic Color Tokens */
+  --background: #FAFBFE;                    /* Very light blue-tinted white */
+  --foreground: #2C3E5D;                    /* Dark navy for text */
   --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
+  --card-foreground: #2C3E5D;
+  --popover: #ffffff;
+  --popover-foreground: #2C3E5D;
+  --primary: #7B9FDB;                       /* MindLens primary blue */
+  --primary-foreground: #ffffff;
+  --secondary: #D4D0F0;                     /* MindLens lavender */
+  --secondary-foreground: #3D5A80;
+  --muted: #E8EEF7;                         /* Soft blue-gray */
+  --muted-foreground: #6B7A99;
+  --accent: #A8C5E8;                        /* Light accent blue */
+  --accent-foreground: #2C3E5D;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --border: rgba(123, 159, 219, 0.2);       /* Primary blue with transparency */
   --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
+  --input-background: #F5F8FC;              /* Very light blue background */
+  --switch-background: #B8C9E0;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --ring: #7B9FDB;                          /* Primary blue for focus rings */
+  --chart-1: #7B9FDB;                       /* Primary blue */
+  --chart-2: #A8C5E8;                       /* Light blue */
+  --chart-3: #D4D0F0;                       /* Lavender */
+  --chart-4: #5E6FA3;                       /* Deep purple-blue */
+  --chart-5: #3D5A80;                       /* Navy */
+  --radius: 0.75rem;                        /* Slightly more rounded for friendlier feel */
+  --sidebar: #F5F8FC;
+  --sidebar-foreground: #2C3E5D;
+  --sidebar-primary: #7B9FDB;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #E8EEF7;
+  --sidebar-accent-foreground: #2C3E5D;
+  --sidebar-border: rgba(123, 159, 219, 0.15);
+  --sidebar-ring: #7B9FDB;
 }
 
 .dark {

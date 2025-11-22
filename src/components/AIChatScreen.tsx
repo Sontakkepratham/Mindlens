@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { ArrowLeft, Send, MessageCircle, AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { projectId, publicAnonKey } from "../utils/supabase/info";
+import mindlensLogo from 'figma:asset/cd1d8896983c70c4f2f82063f4b34137a63890b4.png';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -236,23 +237,27 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-lg border-slate-200">
-      <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-white">
+    <Card className="w-full max-w-2xl mx-auto shadow-lg border-border">
+      <CardHeader className="border-b border-border bg-gradient-to-r from-primary/10 to-accent/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="hover:bg-white/80"
+              className="hover:bg-accent"
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div className="flex items-center gap-2">
-              <MessageCircle className="w-6 h-6 text-cyan-600" />
+            <div className="flex items-center gap-3">
+              <img 
+                src={mindlensLogo} 
+                alt="MindLens Logo" 
+                className="w-10 h-10"
+              />
               <div>
-                <CardTitle className="text-slate-800">MindLens AI Companion</CardTitle>
-                <CardDescription className="text-slate-600">
+                <CardTitle className="text-foreground">MindLens AI Companion</CardTitle>
+                <CardDescription className="text-muted-foreground">
                   Your supportive friend, always here to listen
                 </CardDescription>
               </div>
@@ -263,7 +268,7 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
               variant="ghost"
               size="sm"
               onClick={onSignOut}
-              className="hover:bg-white/80"
+              className="hover:bg-accent"
             >
               <RefreshCw className="w-4 h-4" />
             </Button>
@@ -274,7 +279,7 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
       <CardContent className="p-0">
         {/* Crisis Alert Banner */}
         {hasCrisisIndicator && (
-          <Alert className="m-4 border-red-200 bg-red-50">
+          <Alert className="m-4 border-red-500/20 bg-red-50">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
               <strong>Emergency Resources Available 24/7:</strong>
@@ -289,9 +294,9 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
 
         {/* Error Alert */}
         {error && (
-          <Alert className="m-4 border-red-200 bg-red-50">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
+          <Alert className="m-4 border-destructive/20 bg-destructive/10">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-destructive">
               {error}
             </AlertDescription>
           </Alert>
@@ -300,7 +305,7 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
         {/* Chat Messages */}
         <div 
           ref={scrollRef}
-          className="h-[500px] overflow-y-auto p-4 space-y-4 bg-slate-50"
+          className="h-[500px] overflow-y-auto p-4 space-y-4 bg-background"
         >
           {messages.map((message, index) => (
             <div
@@ -310,14 +315,14 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   message.role === 'user'
-                    ? 'bg-cyan-600 text-white'
-                    : 'bg-white text-slate-800 border border-slate-200 shadow-sm'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-card text-card-foreground border border-border shadow-sm'
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words">{message.content}</p>
                 <p
                   className={`text-xs mt-1 ${
-                    message.role === 'user' ? 'text-cyan-100' : 'text-slate-400'
+                    message.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                   }`}
                 >
                   {new Date(message.timestamp).toLocaleTimeString([], {
@@ -332,10 +337,10 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
           {/* Loading indicator */}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white text-slate-800 border border-slate-200 shadow-sm rounded-lg p-3">
+              <div className="bg-card text-card-foreground border border-border shadow-sm rounded-lg p-3">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-cyan-600" />
-                  <span className="text-slate-600">MindLens AI is thinking...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <span className="text-muted-foreground">MindLens AI is thinking...</span>
                 </div>
               </div>
             </div>
@@ -343,7 +348,7 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-slate-200 bg-white p-4">
+        <div className="border-t border-border bg-card p-4">
           <div className="flex gap-2">
             <Input
               value={inputMessage}
@@ -351,12 +356,12 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
               onKeyPress={handleKeyPress}
               placeholder="Share what's on your mind..."
               disabled={isLoading}
-              className="flex-1 border-slate-300 focus:border-cyan-500 focus:ring-cyan-500"
+              className="flex-1 border-border focus:border-primary focus:ring-primary"
             />
             <Button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -365,14 +370,14 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
               )}
             </Button>
           </div>
-          <p className="text-xs text-slate-500 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             Press Enter to send • Shift + Enter for new line
           </p>
         </div>
 
         {/* Disclaimer */}
-        <div className="border-t border-slate-200 bg-slate-50 p-3">
-          <p className="text-xs text-slate-600 text-center">
+        <div className="border-t border-border bg-muted/30 p-3">
+          <p className="text-xs text-muted-foreground text-center">
             <strong>Note:</strong> MindLens AI provides emotional support but is not a substitute for professional therapy. 
             For emergencies, please call 988 or 911.
           </p>

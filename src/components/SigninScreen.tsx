@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Alert } from './ui/alert';
 import { Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
 import { signInUser, signInWithGoogle, handleOAuthCallback, storeSession } from '../lib/auth';
+import mindlensLogo from 'figma:asset/cd1d8896983c70c4f2f82063f4b34137a63890b4.png';
 
 interface SigninScreenProps {
   onSigninSuccess: (userId: string, email: string, accessToken: string) => void;
@@ -88,24 +89,25 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 bg-slate-50 z-10 px-6 py-4 border-b border-slate-200">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
-            <span className="text-xl">🧠</span>
-          </div>
-          <h2 className="text-slate-900">Sign In to MindLens</h2>
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Header with Logo */}
+      <div className="sticky top-0 bg-card z-10 px-6 py-6 border-b border-border shadow-sm">
+        <div className="flex flex-col items-center text-center">
+          <img 
+            src={mindlensLogo} 
+            alt="MindLens Logo" 
+            className="w-32 h-32 mb-2"
+          />
+          <p className="text-muted-foreground">Welcome back to your mental health journey</p>
         </div>
-        <p className="text-slate-600">Welcome back to your mental health journey</p>
       </div>
 
       <div className="flex-1 px-6 py-6 space-y-4">
         {/* Info Card */}
-        <Card className="border-cyan-200 bg-cyan-50">
+        <Card className="border-primary/20 bg-accent/30">
           <div className="p-5">
-            <h3 className="text-cyan-900 mb-2">Secure & Private</h3>
-            <p className="text-cyan-800 text-sm">
+            <h3 className="text-primary mb-2">Secure & Private</h3>
+            <p className="text-accent-foreground text-sm">
               Your mental health data is encrypted end-to-end with AES-256 encryption. 
               We take your privacy seriously.
             </p>
@@ -114,27 +116,27 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
 
         {/* Error Alert */}
         {error && (
-          <Alert className="border-red-200 bg-red-50">
+          <Alert className="border-destructive/20 bg-destructive/10">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
               <div>
-                <h3 className="text-red-900 mb-1">Sign In Failed</h3>
-                <p className="text-red-800 text-sm">{error}</p>
+                <h3 className="text-destructive mb-1">Sign In Failed</h3>
+                <p className="text-destructive text-sm">{error}</p>
               </div>
             </div>
           </Alert>
         )}
 
         {/* Sign In Form */}
-        <Card className="border-slate-200 bg-white">
+        <Card className="border-border bg-card shadow-sm">
           <form onSubmit={handleSignin} className="p-5 space-y-4">
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-900">
+              <Label htmlFor="email" className="text-card-foreground">
                 Email Address
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
@@ -150,11 +152,11 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-900">
+              <Label htmlFor="password" className="text-card-foreground">
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type="password"
@@ -172,7 +174,7 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
               disabled={loading}
             >
               {loading ? (
@@ -188,13 +190,13 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
         </Card>
 
         {/* Google Sign In */}
-        <Card className="border-slate-200 bg-white">
+        <Card className="border-border bg-card shadow-sm">
           <div className="p-5 text-center">
-            <p className="text-slate-600 mb-3">Or sign in with Google</p>
+            <p className="text-muted-foreground mb-3">Or sign in with Google</p>
             <Button
               onClick={handleGoogleSignin}
               variant="outline"
-              className="w-full border-slate-300"
+              className="w-full border-border hover:bg-accent"
               disabled={loading}
             >
               Sign In with Google
@@ -203,13 +205,13 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
         </Card>
 
         {/* Switch to Signup */}
-        <Card className="border-slate-200 bg-white">
+        <Card className="border-border bg-card shadow-sm">
           <div className="p-5 text-center">
-            <p className="text-slate-600 mb-3">Don't have an account?</p>
+            <p className="text-muted-foreground mb-3">Don't have an account?</p>
             <Button
               onClick={onSwitchToSignup}
               variant="outline"
-              className="w-full border-slate-300"
+              className="w-full border-border hover:bg-accent"
               disabled={loading}
             >
               Create New Account
@@ -219,29 +221,29 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
 
         {/* Features */}
         <div className="pt-4">
-          <h3 className="text-slate-900 mb-3">What's Included:</h3>
-          <div className="space-y-2 text-sm text-slate-700">
+          <h3 className="text-foreground mb-3">What's Included:</h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-cyan-100 flex items-center justify-center">
-                <span className="text-cyan-600 text-xs">✓</span>
+              <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary text-xs">✓</span>
               </div>
               <span>PHQ-9 mental health assessments</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-cyan-100 flex items-center justify-center">
-                <span className="text-cyan-600 text-xs">✓</span>
+              <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary text-xs">✓</span>
               </div>
               <span>AI-powered emotion analysis</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-cyan-100 flex items-center justify-center">
-                <span className="text-cyan-600 text-xs">✓</span>
+              <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary text-xs">✓</span>
               </div>
               <span>Personalized counselor recommendations</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-cyan-100 flex items-center justify-center">
-                <span className="text-cyan-600 text-xs">✓</span>
+              <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary text-xs">✓</span>
               </div>
               <span>Secure, encrypted data storage</span>
             </div>
