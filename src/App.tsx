@@ -19,12 +19,14 @@ import { DetailedReportScreen } from "./components/DetailedReportScreen";
 import { ProfileDashboardScreen } from "./components/ProfileDashboardScreen";
 import { AboutUsScreen } from "./components/AboutUsScreen";
 import { ConnectWithUsScreen } from "./components/ConnectWithUsScreen";
+import { AIChatScreen } from "./components/AIChatScreen";
 import type { ProfileData } from "./components/ProfileDashboardScreen";
 import {
   checkSession,
   storeSession,
   signOutUser,
 } from "./lib/auth";
+import "./lib/debug-auth"; // Load debug utilities
 
 type Screen =
   | "signin"
@@ -45,7 +47,8 @@ type Screen =
   | "detailed-report"
   | "profile"
   | "about-us"
-  | "connect-with-us";
+  | "connect-with-us"
+  | "ai-chat";
 
 export default function App() {
   // Check for existing session on load
@@ -131,20 +134,42 @@ export default function App() {
   const handleSigninSuccess = (
     userId: string,
     email: string,
+    accessToken: string,
   ) => {
+    console.log('🎉 Sign in success! Storing session:', {
+      userId: userId.substring(0, 8) + '***',
+      email,
+      accessTokenLength: accessToken?.length,
+      accessTokenStart: accessToken?.substring(0, 30) + '...',
+    });
+    
     setUserId(userId);
     setUserEmail(email);
-    storeSession(userId, "auto-signin", email);
+    storeSession(userId, accessToken, email);
+    
+    console.log('✅ Session stored in localStorage');
+    
     setCurrentScreen("onboarding");
   };
 
   const handleSignupSuccess = (
     userId: string,
     email: string,
+    accessToken: string,
   ) => {
+    console.log('🎉 Sign up success! Storing session:', {
+      userId: userId.substring(0, 8) + '***',
+      email,
+      accessTokenLength: accessToken?.length,
+      accessTokenStart: accessToken?.substring(0, 30) + '...',
+    });
+    
     setUserId(userId);
     setUserEmail(email);
-    storeSession(userId, "auto-signin", email);
+    storeSession(userId, accessToken, email);
+    
+    console.log('✅ Session stored in localStorage');
+    
     setCurrentScreen("onboarding");
   };
 
@@ -198,9 +223,13 @@ export default function App() {
     setCurrentScreen("connect-with-us");
   };
 
+  const handleStartAIChat = () => {
+    setCurrentScreen("ai-chat");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className={`w-full ${currentScreen === "ai-chat" ? "max-w-4xl" : "max-w-md"}`}>
         {/* Authentication Screens */}
 
         {currentScreen === "signin" && (
@@ -259,6 +288,7 @@ export default function App() {
             onViewAboutUs={handleViewAboutUs}
             onViewConnectWithUs={handleViewConnectWithUs}
             onViewDetailedReport={responses.length > 0 ? handleViewDetailedReport : undefined}
+            onStartAIChat={handleStartAIChat}
           />
         )}
         {currentScreen === "consent" && (
@@ -350,6 +380,12 @@ export default function App() {
         {currentScreen === "connect-with-us" && (
           <ConnectWithUsScreen
             onBack={() => setCurrentScreen("onboarding")}
+          />
+        )}
+        {currentScreen === "ai-chat" && (
+          <AIChatScreen
+            onBack={() => setCurrentScreen("onboarding")}
+            onSignOut={handleSignOut}
           />
         )}
       </div>

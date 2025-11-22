@@ -590,6 +590,10 @@
     grid-row-start: 1;
   }
 
+  .m-4 {
+    margin: calc(var(--spacing) * 4);
+  }
+
   .mx-auto {
     margin-inline: auto;
   }
@@ -781,6 +785,10 @@
     height: 1.15rem;
   }
 
+  .h-\[500px\] {
+    height: 500px;
+  }
+
   .h-\[calc\(100\%-1px\)\] {
     height: calc(100% - 1px);
   }
@@ -883,6 +891,10 @@
 
   .max-w-4xl {
     max-width: var(--container-4xl);
+  }
+
+  .max-w-\[80\%\] {
+    max-width: 80%;
   }
 
   .max-w-md {
@@ -1000,6 +1012,14 @@
 
   .justify-center {
     justify-content: center;
+  }
+
+  .justify-end {
+    justify-content: flex-end;
+  }
+
+  .justify-start {
+    justify-content: flex-start;
   }
 
   .justify-items-start {
@@ -1513,6 +1533,16 @@
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
 
+  .to-teal-50 {
+    --tw-gradient-to: var(--color-teal-50);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
+  .to-white {
+    --tw-gradient-to: var(--color-white);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+
   .fill-primary {
     fill: var(--primary);
   }
@@ -1729,12 +1759,20 @@
     letter-spacing: var(--tracking-wide);
   }
 
+  .break-words {
+    overflow-wrap: break-word;
+  }
+
   .break-all {
     word-break: break-all;
   }
 
   .whitespace-nowrap {
     white-space: nowrap;
+  }
+
+  .whitespace-pre-wrap {
+    white-space: pre-wrap;
   }
 
   .text-amber-600 {
@@ -2293,6 +2331,18 @@
   }
 
   @media (hover: hover) {
+    .hover\:bg-white\/80:hover {
+      background-color: #fffc;
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-white\/80:hover {
+        background-color: color-mix(in oklab, var(--color-white) 80%, transparent);
+      }
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:text-accent-foreground:hover {
       color: var(--accent-foreground);
     }
@@ -2333,6 +2383,10 @@
       --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, #0000001a), 0 2px 4px -2px var(--tw-shadow-color, #0000001a);
       box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
     }
+  }
+
+  .focus\:border-cyan-500:focus {
+    border-color: var(--color-cyan-500);
   }
 
   .focus\:ring-2:focus {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -6,10 +6,10 @@ import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { Alert } from './ui/alert';
 import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { signUpUser } from '../lib/auth';
+import { signUpUser, signInWithGoogle, handleOAuthCallback, storeSession } from '../lib/auth';
 
 interface SignupScreenProps {
-  onSignupSuccess: (userId: string, email: string) => void;
+  onSignupSuccess: (userId: string, email: string, accessToken: string) => void;
   onSwitchToSignin: () => void;
 }
 
@@ -22,6 +22,21 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Check for OAuth callback on mount
+  useEffect(() => {
+    const checkOAuthSession = async () => {
+      const oauthResult = await handleOAuthCallback();
+      if (oauthResult && oauthResult.success && oauthResult.userId && oauthResult.email && oauthResult.accessToken) {
+        // Store session
+        storeSession(oauthResult.userId, oauthResult.accessToken, oauthResult.email);
+        // Trigger success callback
+        onSignupSuccess(oauthResult.userId, oauthResult.email, oauthResult.accessToken);
+      }
+    };
+    
+    checkOAuthSession();
+  }, [onSignupSuccess]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +68,7 @@ export function SignupScreen({ onSignupSuccess, onSwitchToSignin }: SignupScreen
         setSuccess(true);
         // Automatically sign them in after successful signup
         setTimeout(() => {
-          onSignupSuccess(result.userId!, email);
+          onSignupSuccess(result.userId!, email, result.accessToken!);
         }, 1500);
       } else {
         setError(result.error || 'Sign up failed. Please try again.');

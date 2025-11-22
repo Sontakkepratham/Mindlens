@@ -1,6 +1,6 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon } from 'lucide-react';
+import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon, Bot } from 'lucide-react';
 import React from 'react';
 
 interface OnboardingScreenProps {
@@ -11,6 +11,7 @@ interface OnboardingScreenProps {
   onViewAboutUs?: () => void;
   onViewConnectWithUs?: () => void;
   onViewDetailedReport?: () => void;
+  onStartAIChat?: () => void;
 }
 
 export function OnboardingScreen({ 
@@ -20,7 +21,8 @@ export function OnboardingScreen({
   onViewProfile,
   onViewAboutUs,
   onViewConnectWithUs,
-  onViewDetailedReport
+  onViewDetailedReport,
+  onStartAIChat
 }: OnboardingScreenProps) {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -97,6 +99,15 @@ export function OnboardingScreen({
               >
                 <MessageCircle className="w-5 h-5 text-slate-600" />
                 <span className="text-slate-900">Connect With Us</span>
+              </button>
+            )}
+            {onStartAIChat && (
+              <button
+                onClick={() => handleDropdownItemClick(onStartAIChat)}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+              >
+                <Bot className="w-5 h-5 text-slate-600" />
+                <span className="text-slate-900">Start AI Chat</span>
               </button>
             )}
           </div>
@@ -195,6 +206,19 @@ export function OnboardingScreen({
                 <span className="text-slate-900">Emotional Stroop Test</span>
               </div>
               <p className="text-sm text-blue-700">Measure emotional interference</p>
+            </button>
+          )}
+
+          {onStartAIChat && (
+            <button
+              onClick={onStartAIChat}
+              className="w-full mt-3 p-4 bg-gradient-to-r from-cyan-50 to-teal-50 border-2 border-cyan-300 rounded-lg hover:shadow-md transition-all group"
+            >
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Bot className="w-5 h-5 text-cyan-600 group-hover:animate-pulse" />
+                <span className="text-slate-900">Talk to MindLens AI</span>
+              </div>
+              <p className="text-sm text-cyan-700">Your compassionate companion, always here to listen</p>
             </button>
           )}
         </div>

@@ -216,6 +216,14 @@ https://YOUR_PROJECT_ID.supabase.co/functions/v1/make-server-aa629e1b
 | `POST` | `/ai/analyze-face` | Emotion analysis | Yes |
 | `POST` | `/stroop/save` | Save Stroop test | No |
 | `POST` | `/emergency/trigger` | Crisis alert | Yes |
+| **🆕** `GET` | `/data/user/:userId` | **Get complete user data (unified)** | Yes |
+| **🆕** `GET` | `/data/assessment/:sessionId` | **Get complete assessment (unified)** | Yes |
+| **🆕** `GET` | `/data/dashboard` | **Get statistics (unified)** | Yes |
+| **🆕** `GET` | `/data/search` | **Search both databases** | Yes |
+| **🆕** `POST` | `/data/sync` | **Sync to BigQuery** | Yes |
+| **🆕** `GET` | `/data/analytics` | **Get trends & analytics** | Yes |
+| **🆕** `GET` | `/data/status` | **Check connections** | No |
+| **🆕** `GET` | `/data/query` | **Custom BigQuery SQL** | Yes |
 
 ---
 

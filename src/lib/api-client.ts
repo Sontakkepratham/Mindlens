@@ -4,15 +4,9 @@
  */
 
 import { projectId, publicAnonKey } from '../utils/supabase/info';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './supabase-client';
 
 const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-aa629e1b`;
-
-// Create Supabase client for auth
-const supabase = createClient(
-  `https://${projectId}.supabase.co`,
-  publicAnonKey
-);
 
 /**
  * Get current access token from Supabase session

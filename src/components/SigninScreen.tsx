@@ -1,35 +1,64 @@
-import { useState } from 'react';
-import { Card } from './ui/card';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
+import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert } from './ui/alert';
 import { Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
-import { signInUser, signInWithGoogle } from '../lib/auth';
+import { signInUser, signInWithGoogle, handleOAuthCallback, storeSession } from '../lib/auth';
 
 interface SigninScreenProps {
-  onSigninSuccess: (userId: string, email: string) => void;
+  onSigninSuccess: (userId: string, email: string, accessToken: string) => void;
   onSwitchToSignup: () => void;
 }
 
 export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Check for OAuth callback on mount
+  useEffect(() => {
+    const checkOAuthSession = async () => {
+      const oauthResult = await handleOAuthCallback();
+      if (oauthResult && oauthResult.success && oauthResult.userId && oauthResult.email && oauthResult.accessToken) {
+        // Store session
+        storeSession(oauthResult.userId, oauthResult.accessToken, oauthResult.email);
+        // Trigger success callback
+        onSigninSuccess(oauthResult.userId, oauthResult.email, oauthResult.accessToken);
+      }
+    };
+    
+    checkOAuthSession();
+  }, [onSigninSuccess]);
 
   const handleSignin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const result = await signInUser(email, password);
       
-      if (result.success && result.userId) {
-        onSigninSuccess(result.userId, email);
+      console.log('📥 Sign in result:', {
+        success: result.success,
+        hasUserId: !!result.userId,
+        hasAccessToken: !!result.accessToken,
+        accessTokenLength: result.accessToken?.length,
+        accessTokenStart: result.accessToken?.substring(0, 30) + '...',
+      });
+      
+      if (result.success && result.userId && result.accessToken) {
+        onSigninSuccess(result.userId, email, result.accessToken);
       } else {
-        setError(result.error || 'Sign in failed. Please check your credentials.');
+        setError(result.error || 'Sign in failed. Please try again.');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -45,14 +74,15 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
     try {
       const result = await signInWithGoogle();
       
-      if (result.success && result.userId && result.email) {
-        onSigninSuccess(result.userId, result.email);
-      } else {
+      // For OAuth, the user will be redirected to Google
+      // When they return, the useEffect will handle the session
+      if (!result.success) {
         setError(result.error || 'Google sign in failed. Please try again.');
+        setLoading(false);
       }
+      // If success, user is being redirected - keep loading state
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
-    } finally {
       setLoading(false);
     }
   };
