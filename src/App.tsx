@@ -23,6 +23,9 @@ import { SecretSettingsDialog } from "./components/SecretSettingsDialog";
 import { EmotionalMicroStoriesGame } from "./components/EmotionalMicroStoriesGame";
 import { MindLensLab } from "./components/MindLensLab";
 import { AffectiveGoNoGo } from "./components/affective-go-no-go/AffectiveGoNoGo";
+import { MindLensDiscovery } from "./components/mind-lens-discovery/MindLensDiscovery";
+import { CoupleTest } from "./components/couple-test/CoupleTest";
+import type { CoupleTestResults } from "./components/couple-test/CoupleTest";
 import type { ProfileData } from "./components/ProfileDashboardScreen";
 import {
   checkSession,
@@ -53,7 +56,9 @@ type Screen =
   | "connect-with-us"
   | "ai-chat"
   | "emotional-stories"
-  | "mind-lens-lab";
+  | "mind-lens-lab"
+  | "mind-lens-discovery"
+  | "couple-test";
 
 export default function App() {
   // Check for existing session on load
@@ -75,6 +80,8 @@ export default function App() {
   const [showSetup, setShowSetup] = useState(true);
   const [personalityResults, setPersonalityResults] =
     useState<PersonalityResults | undefined>(undefined);
+  const [coupleTestResults, setCoupleTestResults] =
+    useState<CoupleTestResults | undefined>(undefined);
   const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
   const [secretDialogOpen, setSecretDialogOpen] = useState(false);
 
@@ -271,6 +278,20 @@ export default function App() {
     setCurrentScreen("mind-lens-lab");
   };
 
+  const handleOpenMindLensDiscovery = () => {
+    setCurrentScreen("mind-lens-discovery");
+  };
+
+  const handleStartCoupleTest = () => {
+    setCurrentScreen("couple-test");
+  };
+
+  const handleCoupleTestComplete = (results: CoupleTestResults) => {
+    setCoupleTestResults(results);
+    console.log('Couple test completed:', results);
+    setCurrentScreen("onboarding");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className={`w-full ${currentScreen === "ai-chat" || currentScreen === "mind-lens-lab" ? "max-w-4xl" : "max-w-md"}`}>
@@ -326,7 +347,7 @@ export default function App() {
         {currentScreen === "onboarding" && (
           <OnboardingScreen 
             onStart={handleStartAssessment}
-            onStartPersonalityTest={handleStartPersonalityTest}
+            onOpenMindLensDiscovery={handleOpenMindLensDiscovery}
             onViewProfile={handleViewProfile}
             onViewAboutUs={handleViewAboutUs}
             onViewConnectWithUs={handleViewConnectWithUs}
@@ -444,6 +465,23 @@ export default function App() {
             onBack={() => setCurrentScreen("onboarding")}
             onStartAffectiveGoNoGo={handleStartAffectiveGoNoGo}
             onStartEmotionalStories={handleStartEmotionalStories}
+          />
+        )}
+        {currentScreen === "mind-lens-discovery" && (
+          <MindLensDiscovery
+            onBack={() => setCurrentScreen("onboarding")}
+            onStartPersonalityTest={handleStartPersonalityTest}
+            onStartCoupleTest={handleStartCoupleTest}
+            completedTests={[
+              personalityResults ? 'personality' : '',
+              coupleTestResults ? 'couple' : ''
+            ].filter(Boolean)}
+          />
+        )}
+        {currentScreen === "couple-test" && (
+          <CoupleTest
+            onComplete={handleCoupleTestComplete}
+            onBack={() => setCurrentScreen("mind-lens-discovery")}
           />
         )}
       </div>

@@ -7,6 +7,7 @@ import mindlensLogo from 'figma:asset/cd1d8896983c70c4f2f82063f4b34137a63890b4.p
 interface OnboardingScreenProps {
   onStart: () => void;
   onStartPersonalityTest?: () => void;
+  onOpenMindLensDiscovery?: () => void;
   onOpenMindLensLab?: () => void;
   onViewProfile?: () => void;
   onViewAboutUs?: () => void;
@@ -18,6 +19,7 @@ interface OnboardingScreenProps {
 export function OnboardingScreen({ 
   onStart, 
   onStartPersonalityTest, 
+  onOpenMindLensDiscovery,
   onOpenMindLensLab,
   onViewProfile,
   onViewAboutUs,
@@ -180,7 +182,7 @@ export function OnboardingScreen({
         Start Assessment
       </Button>
 
-      {onStartPersonalityTest && (
+      {(onOpenMindLensDiscovery || onStartPersonalityTest) && (
         <div className="w-full max-w-xs">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -192,14 +194,14 @@ export function OnboardingScreen({
           </div>
           
           <button
-            onClick={onStartPersonalityTest}
-            className="w-full mt-4 p-4 bg-secondary/50 border-2 border-secondary rounded-lg hover:shadow-md transition-all group"
+            onClick={onOpenMindLensDiscovery || onStartPersonalityTest}
+            className="w-full mt-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg hover:shadow-lg transition-all group hover:border-purple-400"
           >
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Sparkles className="w-5 h-5 text-secondary-foreground group-hover:animate-pulse" />
-              <span className="text-foreground">Want to know your personality?</span>
+              <Sparkles className="w-5 h-5 text-purple-600 group-hover:animate-pulse" />
+              <span className="text-foreground font-medium">MindLens Discovery</span>
             </div>
-            <p className="text-sm text-secondary-foreground">Take a free test</p>
+            <p className="text-sm text-purple-700">Know yourself & your relationships</p>
           </button>
 
           {onOpenMindLensLab && (
@@ -222,7 +224,7 @@ export function OnboardingScreen({
             >
               <div className="flex items-center justify-center gap-2 mb-1">
                 <Bot className="w-5 h-5 text-primary group-hover:animate-pulse" />
-                <span className="text-foreground">Talk to MindLens AI</span>
+                <span className="text-foreground">MindLens AI</span>
               </div>
               <p className="text-sm text-primary">Your compassionate companion, always here to listen</p>
             </button>
