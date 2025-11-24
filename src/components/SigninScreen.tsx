@@ -54,12 +54,23 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
         hasAccessToken: !!result.accessToken,
         accessTokenLength: result.accessToken?.length,
         accessTokenStart: result.accessToken?.substring(0, 30) + '...',
+        error: result.error,
       });
       
       if (result.success && result.userId && result.accessToken) {
+        // Store the session before navigating
+        storeSession(result.userId, result.accessToken, email);
         onSigninSuccess(result.userId, email, result.accessToken);
       } else {
-        setError(result.error || 'Sign in failed. Please try again.');
+        // Provide a more helpful error message
+        const errorMsg = result.error || 'Sign in failed. Please try again.';
+        
+        // If it's an invalid credentials error, suggest signing up
+        if (errorMsg.includes('Invalid') || errorMsg.includes('credentials') || errorMsg.includes('password')) {
+          setError('Invalid email or password. Don\'t have an account yet? Click "Create New Account" below to sign up.');
+        } else {
+          setError(errorMsg);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');

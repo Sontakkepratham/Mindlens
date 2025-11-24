@@ -14,7 +14,6 @@ import { CredentialsHelpScreen } from "./components/CredentialsHelpScreen";
 import { CredentialsUploadScreen } from "./components/CredentialsUploadScreen";
 import { SigninScreen } from "./components/SigninScreen";
 import { SignupScreen } from "./components/SignupScreen";
-import { StroopTest } from "./components/stroop/StroopTest";
 import { DetailedReportScreen } from "./components/DetailedReportScreen";
 import { ProfileDashboardScreen } from "./components/ProfileDashboardScreen";
 import { AboutUsScreen } from "./components/AboutUsScreen";
@@ -23,6 +22,7 @@ import { AIChatScreen } from "./components/AIChatScreen";
 import { SecretSettingsDialog } from "./components/SecretSettingsDialog";
 import { EmotionalMicroStoriesGame } from "./components/EmotionalMicroStoriesGame";
 import { MindLensLab } from "./components/MindLensLab";
+import { AffectiveGoNoGo } from "./components/affective-go-no-go/AffectiveGoNoGo";
 import type { ProfileData } from "./components/ProfileDashboardScreen";
 import {
   checkSession,
@@ -46,7 +46,7 @@ type Screen =
   | "ml-dashboard"
   | "credentials-help"
   | "credentials-upload"
-  | "stroop-test"
+  | "affective-go-no-go"
   | "detailed-report"
   | "profile"
   | "about-us"
@@ -239,8 +239,8 @@ export default function App() {
     setCurrentScreen("personality-results");
   };
 
-  const handleStartStroopTest = () => {
-    setCurrentScreen("stroop-test");
+  const handleStartAffectiveGoNoGo = () => {
+    setCurrentScreen("affective-go-no-go");
   };
 
   const handleViewDetailedReport = () => {
@@ -395,8 +395,8 @@ export default function App() {
             onRetakeTest={() => setCurrentScreen("personality-test")}
           />
         )}
-        {currentScreen === "stroop-test" && (
-          <StroopTest
+        {currentScreen === "affective-go-no-go" && (
+          <AffectiveGoNoGo
             onBack={() => setCurrentScreen("mind-lens-lab")}
           />
         )}
@@ -442,7 +442,7 @@ export default function App() {
         {currentScreen === "mind-lens-lab" && (
           <MindLensLab
             onBack={() => setCurrentScreen("onboarding")}
-            onStartStroopTest={handleStartStroopTest}
+            onStartAffectiveGoNoGo={handleStartAffectiveGoNoGo}
             onStartEmotionalStories={handleStartEmotionalStories}
           />
         )}

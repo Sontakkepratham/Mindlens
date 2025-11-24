@@ -152,7 +152,13 @@ authApp.post('/signin', async (c) => {
       // Handle specific errors
       if (error.message.includes('Invalid login credentials')) {
         return c.json({ 
-          error: 'Invalid email or password. Please try again.' 
+          error: 'Invalid email or password. Please check your credentials and try again, or create a new account if you haven\'t signed up yet.' 
+        }, 401);
+      }
+      
+      if (error.message.includes('Email not confirmed')) {
+        return c.json({ 
+          error: 'Please confirm your email address before signing in.' 
         }, 401);
       }
       

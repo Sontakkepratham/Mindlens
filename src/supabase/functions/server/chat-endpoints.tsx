@@ -41,11 +41,26 @@ chatApp.post('/send', async (c) => {
         message: authError.message,
         status: authError.status,
         name: authError.name,
+        code: authError.code,
+        fullError: JSON.stringify(authError),
       });
+      
+      // Return a more helpful error message
+      let errorMessage = 'Authentication failed. Please sign in again.';
+      let errorCode = 401;
+      
+      if (authError.message?.includes('JWT') || authError.message?.includes('expired')) {
+        errorMessage = 'Your session has expired. Please sign out and sign in again.';
+      } else if (authError.message?.includes('invalid')) {
+        errorMessage = 'Invalid authentication token. Please sign out and sign in again.';
+      }
+      
       return c.json({ 
-        error: 'Authentication failed. Please sign in again.',
-        details: authError.message 
-      }, 401);
+        code: errorCode,
+        message: errorMessage,
+        details: authError.message,
+        hint: 'Try signing out and signing in again to refresh your session.'
+      }, errorCode);
     }
 
     if (!user?.id) {

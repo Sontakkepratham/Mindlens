@@ -16,35 +16,35 @@ import { useState } from 'react';
 
 interface MindLensLabProps {
   onBack: () => void;
-  onStartStroopTest: () => void;
+  onStartAffectiveGoNoGo: () => void;
   onStartEmotionalStories: () => void;
   completedTests?: {
-    stroopTest: boolean;
+    affectiveGoNoGo: boolean;
     emotionalStories: boolean;
   };
 }
 
 export function MindLensLab({ 
   onBack, 
-  onStartStroopTest, 
+  onStartAffectiveGoNoGo, 
   onStartEmotionalStories,
-  completedTests = { stroopTest: false, emotionalStories: false }
+  completedTests = { affectiveGoNoGo: false, emotionalStories: false }
 }: MindLensLabProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const tests = [
     {
-      id: 'stroop',
-      title: 'Emotional Stroop Test',
-      subtitle: 'Measure emotional interference',
-      description: 'Assess how emotions affect your cognitive processing speed through color-word matching tasks.',
+      id: 'affectiveGoNoGo',
+      title: 'Affective Go/No-Go Test',
+      subtitle: 'Measure emotional attention & impulse control',
+      description: 'Test your response inhibition and emotional attentional bias by tapping for target emotions and resisting others.',
       icon: Brain,
       color: '#7B9FDB',
-      duration: '5-7 min',
+      duration: '3-5 min',
       difficulty: 'Moderate',
-      metrics: ['Response Time', 'Accuracy', 'Emotional Bias'],
-      completed: completedTests.stroopTest,
-      onClick: onStartStroopTest
+      metrics: ['Response Time', 'Impulse Control', 'Emotional Bias'],
+      completed: completedTests.affectiveGoNoGo,
+      onClick: onStartAffectiveGoNoGo
     },
     {
       id: 'stories',

@@ -209,14 +209,17 @@ export function checkSession(): {
   isAuthenticated: boolean;
   userId?: string;
   email?: string;
+  accessToken?: string;
 } {
   const userId = localStorage.getItem('mindlens_user_id');
   const email = localStorage.getItem('mindlens_user_email');
+  const accessToken = localStorage.getItem('mindlens_access_token');
 
   return {
     isAuthenticated: !!userId,
     userId: userId || undefined,
     email: email || undefined,
+    accessToken: accessToken || undefined,
   };
 }
 
