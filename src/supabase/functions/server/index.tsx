@@ -11,6 +11,8 @@ import authApp from './auth-endpoints.tsx';
 import exportApp from './data-export-endpoints.tsx';
 import unifiedDataApp from './unified-data-endpoints.tsx';
 import chatApp from './chat-endpoints.tsx';
+import aiInsightsApp from './ai-insights-endpoints.tsx';
+import adminApp from './admin-endpoints.tsx';
 
 const app = new Hono();
 
@@ -32,6 +34,12 @@ app.route('/make-server-aa629e1b/data', unifiedDataApp);
 
 // Mount chat endpoints (AI chatbot)
 app.route('/make-server-aa629e1b/chat', chatApp);
+
+// Mount AI insights endpoints (assessment analysis)
+app.route('/make-server-aa629e1b/ai-insights', aiInsightsApp);
+
+// Mount admin endpoints (secret settings)
+app.route('/make-server-aa629e1b/admin', adminApp);
 
 // Mount ML endpoints
 app.route('/make-server-aa629e1b/ml', mlApp);
@@ -56,6 +64,7 @@ app.get('/', (c) => {
       '/make-server-aa629e1b/export',
       '/make-server-aa629e1b/data',
       '/make-server-aa629e1b/chat',
+      '/make-server-aa629e1b/ai-insights',
       '/make-server-aa629e1b/ml',
     ],
   });

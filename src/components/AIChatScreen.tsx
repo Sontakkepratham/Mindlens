@@ -26,6 +26,7 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
   const [error, setError] = useState<string | undefined>();
   const [hasCrisisIndicator, setHasCrisisIndicator] = useState(false);
   const [authCheckDone, setAuthCheckDone] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -149,16 +150,19 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
         if (response.status === 401) {
           const authError = 'Authentication failed. Your session may have expired or be invalid. Please sign out and sign in again to refresh your session.';
           throw new Error(authError);
-        } else if (errorData.error?.includes('exceeded your current quota') || errorData.error?.includes('Gemini API quota')) {
-          // API quota exceeded
-          const quotaError = '⚠️ API Quota Exceeded\n\nThe AI service has exceeded its usage quota. To resolve:\n\n1. For Gemini: Visit https://console.cloud.google.com/billing\n2. For OpenAI: Visit https://platform.openai.com/account/billing\n3. Add a payment method if not already added\n4. Check your usage limits and increase if needed\n5. Wait a few minutes and try again\n\nFor testing, you can use demo mode until billing is configured.';
+        } else if (response.status === 404 && (errorData.error?.includes('API Key') || errorData.error?.includes('models'))) {
+          // API key doesn't have access to models - pass through the detailed backend message
+          throw new Error(errorData.error);
+        } else if (response.status === 429) {
+          // Actual API quota exceeded (status 429)
+          const quotaError = '⚠️ API Quota Exceeded\n\nThe AI service has exceeded its usage quota. To resolve:\n\n1. For Gemini: Visit https://aistudio.google.com/billing\n2. Add a payment method if not already added\n3. Check your usage limits and increase if needed\n4. Wait a few minutes and try again\n\nFor testing, you can use demo mode (CHAT_DEMO_MODE=true).';
           throw new Error(quotaError);
-        } else if (errorData.error?.includes('Gemini API') || errorData.error?.includes('OpenAI API')) {
-          // Other AI-specific errors
-          throw new Error('AI Service Error: ' + errorData.error);
-        } else if (errorData.error?.includes('API key')) {
-          // API key configuration errors
-          throw new Error('⚠️ Configuration Error: ' + errorData.error);
+        } else if (errorData.error?.includes('API key') || errorData.error?.includes('API Key')) {
+          // API key configuration errors - pass through the detailed backend message
+          throw new Error(errorData.error);
+        } else if (errorData.error?.includes('Gemini') || errorData.error?.includes('OpenAI')) {
+          // Other AI-specific errors - pass through backend message
+          throw new Error(errorData.error);
         }
         
         throw new Error(errorData.error || 'Failed to send message');
@@ -181,6 +185,11 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
           content: data.response,
           timestamp: data.timestamp,
         };
+        
+        // Check if demo mode is active (message contains demo mode tag)
+        if (data.response?.includes('[Demo Mode')) {
+          setIsDemoMode(true);
+        }
 
         // DEBUG: Show what Gemini actually returned
         if (data.debugInfo) {
@@ -277,6 +286,27 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
       </CardHeader>
 
       <CardContent className="p-0">
+        {/* Demo Mode Banner */}
+        {isDemoMode && (
+          <Alert className="m-4 border-primary/30 bg-primary/5">
+            <MessageCircle className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-primary">
+              <strong>🎭 Demo Mode Active</strong>
+              <div className="mt-1 text-sm">
+                You're chatting with simulated AI responses for testing. To use real Gemini AI, get a free API key from{' '}
+                <a 
+                  href="https://aistudio.google.com/app/apikey" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-primary/80"
+                >
+                  Google AI Studio
+                </a>.
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         {/* Crisis Alert Banner */}
         {hasCrisisIndicator && (
           <Alert className="m-4 border-red-500/20 bg-red-50">

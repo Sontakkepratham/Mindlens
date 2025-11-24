@@ -1,14 +1,17 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { AlertTriangle, Heart } from 'lucide-react';
+import { AIInsightsCard } from './AIInsightsCard';
 
 interface ResultsScreenProps {
   phqScore: number;
+  sessionId: string | null;
+  accessToken: string | undefined;
   onViewRecommendations: () => void;
   onViewSelfCare?: () => void;
 }
 
-export function ResultsScreen({ phqScore, onViewRecommendations, onViewSelfCare }: ResultsScreenProps) {
+export function ResultsScreen({ phqScore, sessionId, accessToken, onViewRecommendations, onViewSelfCare }: ResultsScreenProps) {
   // PHQ-9 severity levels
   const getSeverity = (score: number) => {
     if (score <= 4) return { level: 'Minimal', color: 'text-slate-700' };
@@ -89,6 +92,14 @@ export function ResultsScreen({ phqScore, onViewRecommendations, onViewSelfCare 
               </div>
             </div>
           </Card>
+        )}
+
+        {/* AI-Powered Insights */}
+        {sessionId && accessToken && (
+          <AIInsightsCard
+            sessionId={sessionId}
+            accessToken={accessToken}
+          />
         )}
       </div>
 

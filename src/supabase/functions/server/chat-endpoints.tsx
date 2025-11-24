@@ -1,6 +1,8 @@
 import { Hono } from 'npm:hono';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import * as kv from './kv_store.tsx';
+import { discoverAvailableModels, getPrioritizedModels } from './gemini-model-discovery.tsx';
+import { getGeminiApiKey, isDemoMode } from './admin-endpoints.tsx';
 
 const chatApp = new Hono();
 
@@ -9,6 +11,10 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 );
+
+// Cache the working model and available models to avoid discovery on every request
+let cachedWorkingModel: string | null = null;
+let cachedAvailableModels: string[] | null = null;
 
 /**
  * Send a message to the AI chatbot
@@ -63,34 +69,35 @@ chatApp.post('/send', async (c) => {
     const history = (await kv.get(historyKey)) || [];
 
     // System prompt for mental health support
-    const systemPrompt = `You are MindLens AI, a compassionate and supportive mental health companion. You provide emotional support and act as a caring friend to users who may be going through difficult times.
+    const systemPrompt = `You are MindLens AI, a compassionate mental health companion. Provide warm, empathetic support in 2-3 sentences.
 
 Guidelines:
-- Be warm, empathetic, and non-judgmental
-- Listen actively and validate the user's feelings
-- Provide thoughtful, supportive responses
-- Encourage professional help for serious mental health concerns
-- Use a conversational, friendly tone
-- Never diagnose or prescribe medication
-- In crisis situations, immediately provide emergency resources (988 Suicide & Crisis Lifeline, Crisis Text Line: text HOME to 741741)
-- Keep responses concise but meaningful (2-4 sentences typically)
-- Focus on emotional support, active listening, and gentle guidance
+- Be warm and non-judgmental
+- Validate feelings, encourage professional help when needed
+- In crisis: immediately provide 988 Suicide Lifeline
+- Keep responses concise (2-3 sentences)
 
-Remember: You're a supportive friend, not a replacement for professional therapy.`;
+You're a supportive friend, not therapy.`;
 
     // Check for GEMINI_API_KEY
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
-    const isDemoMode = Deno.env.get('CHAT_DEMO_MODE') === 'true';
+    const geminiApiKey = await getGeminiApiKey();
+    const isDemo = await isDemoMode();
     
-    if (!geminiApiKey && !isDemoMode) {
+    console.log('🔍 API Configuration:', {
+      hasApiKey: !!geminiApiKey,
+      isDemo,
+      willUseDemo: isDemo
+    });
+    
+    if (!geminiApiKey && !isDemo) {
       console.error('❌ GEMINI_API_KEY environment variable not set');
       return c.json({ 
-        error: 'Gemini API key not configured. Please set the GEMINI_API_KEY environment variable.' 
+        error: 'Gemini API key not configured. Please set the GEMINI_API_KEY environment variable or enable CHAT_DEMO_MODE.' 
       }, 500);
     }
 
-    // Demo mode for testing without Gemini API
-    if (isDemoMode || !geminiApiKey) {
+    // Demo mode for testing without Gemini API - CHECK THIS FIRST
+    if (isDemo) {
       console.log('🎭 Running in DEMO MODE - generating simulated response');
       
       const demoResponses = [
@@ -170,82 +177,44 @@ Remember: You're a supportive friend, not a replacement for professional therapy
       ? `${systemPrompt}\n\nUser: ${message}`
       : message;
 
-    // First, discover available models
-    console.log('🔍 Discovering available Gemini models...');
-    let availableModels = [];
-    
-    try {
-      const modelsResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${geminiApiKey}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (modelsResponse.ok) {
-        const modelsData = await modelsResponse.json();
-        availableModels = modelsData.models || [];
-        console.log('✅ Available models:', availableModels.map((m: any) => m.name));
+    // Discover available models if not cached (first request only)
+    if (!cachedAvailableModels) {
+      console.log('🔍 Discovering available Gemini models...');
+      const discovery = await discoverAvailableModels(geminiApiKey);
+      if (discovery.success && discovery.models.length > 0) {
+        cachedAvailableModels = discovery.models;
+        console.log('✅ Discovered available models:', cachedAvailableModels);
       } else {
-        console.log('⚠️ Could not fetch models list, will try default models');
-      }
-    } catch (error) {
-      console.log('⚠️ Error fetching models:', error.message);
-    }
-
-    // Find models that support generateContent
-    let targetModel = null;
-    
-    if (availableModels.length > 0) {
-      // Filter for models that support generateContent
-      const compatibleModels = availableModels.filter((model: any) => 
-        model.supportedGenerationMethods?.includes('generateContent')
-      );
-      
-      console.log('✅ Compatible models:', compatibleModels.map((m: any) => m.name));
-      
-      // Prefer gemini-pro or gemini-1.5-flash variants
-      targetModel = compatibleModels.find((m: any) => 
-        m.name.includes('gemini-1.5-flash') || m.name.includes('gemini-pro')
-      ) || compatibleModels[0];
-      
-      // Avoid gemini-2.5-pro if possible (has thinking mode issues)
-      if (targetModel?.name.includes('gemini-2.5')) {
-        const alternativeModel = compatibleModels.find((m: any) => 
-          !m.name.includes('2.5') && (m.name.includes('1.5-flash') || m.name.includes('gemini-pro'))
-        );
-        if (alternativeModel) {
-          targetModel = alternativeModel;
-          console.log(`✅ Avoiding gemini-2.5, using: ${targetModel.name}`);
-        }
-      }
-      
-      if (targetModel) {
-        console.log(`✅ Selected model: ${targetModel.name}`);
+        console.error('❌ Failed to discover models:', discovery.error);
+        // If discovery fails, return helpful error
+        return c.json({
+          error: `⚠️ Unable to Access Gemini Models\n\nYour API key doesn't have access to any Gemini models.\n\n🔧 How to Fix:\n1. Go to: https://aistudio.google.com/app/apikey\n2. Create a NEW API key (starts with "AIza...")\n3. Copy the key\n4. Update GEMINI_API_KEY in your environment\n\n💡 Alternative: Set CHAT_DEMO_MODE=true to test without API\n\nTechnical details: ${discovery.error || 'No models available'}`,
+        }, 404);
       }
     }
 
-    // Fallback to trying common model names
-    const fallbackModels = [
-      'models/gemini-1.5-flash',
-      'models/gemini-pro',
-      'models/gemini-1.5-pro',
-    ];
+    // Use cached model if available, otherwise use discovered models
+    const modelsToTry = cachedWorkingModel 
+      ? [cachedWorkingModel] // Try cached model first
+      : getPrioritizedModels(cachedAvailableModels);
+
+    if (modelsToTry.length === 0) {
+      return c.json({
+        error: `⚠️ No Available Models\n\nNo Gemini models are available for your API key.\n\n🔧 Solution:\n1. Get a FREE API key from Google AI Studio\n2. Go to: https://aistudio.google.com/app/apikey\n3. Create a new API key (starts with "AIza...")\n4. Update GEMINI_API_KEY environment variable\n\n💡 Or enable Demo Mode: Set CHAT_DEMO_MODE=true`,
+      }, 503);
+    }
 
     let geminiResponse = null;
     let lastError = null;
     let successfulModel = null;
 
-    // Try the discovered model first if available
-    if (targetModel) {
+    // Try models in order (cached first if available)
+    for (const modelName of modelsToTry) {
       try {
-        console.log(`🔄 Trying discovered model: ${targetModel.name}`);
+        console.log(`🔄 Trying model: ${modelName}${modelName === cachedWorkingModel ? ' (cached)' : ''}`);
         
         geminiResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/${targetModel.name}:generateContent?key=${geminiApiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${geminiApiKey}`,
           {
             method: 'POST',
             headers: {
@@ -261,7 +230,7 @@ Remember: You're a supportive friend, not a replacement for professional therapy
               ],
               generationConfig: {
                 temperature: 0.7,
-                maxOutputTokens: 2048, // Increased from 500 to 2048
+                maxOutputTokens: 512, // Reduced from 2048 to 512 for faster responses
                 topP: 0.95,
                 topK: 40,
               },
@@ -270,68 +239,27 @@ Remember: You're a supportive friend, not a replacement for professional therapy
         );
 
         if (geminiResponse.ok) {
-          successfulModel = targetModel.name;
-          console.log(`✅ Successfully using discovered model: ${targetModel.name}`);
+          successfulModel = modelName;
+          // Cache this working model for future requests
+          if (!cachedWorkingModel) {
+            cachedWorkingModel = modelName;
+            console.log(`✅ Cached working model: ${modelName}`);
+          }
+          console.log(`✅ Successfully using model: ${modelName}`);
+          break;
         } else {
           const errorData = await geminiResponse.json().catch(() => ({}));
           lastError = errorData;
-          console.log(`❌ Discovered model failed:`, errorData.error?.message);
+          console.log(`❌ Model ${modelName} failed:`, errorData.error?.message);
+          
+          // If it's not a "not found" error, break and report it
+          if (geminiResponse.status !== 404) {
+            break;
+          }
         }
       } catch (error) {
-        console.error(`❌ Error with discovered model:`, error);
+        console.error(`❌ Error trying model ${modelName}:`, error);
         lastError = { error: { message: error.message } };
-      }
-    }
-
-    // If discovered model didn't work, try fallback models
-    if (!geminiResponse || !geminiResponse.ok) {
-      for (const modelName of fallbackModels) {
-        try {
-          console.log(`🔄 Trying fallback model: ${modelName}`);
-          
-          geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${geminiApiKey}`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                contents: [
-                  ...conversationHistory,
-                  {
-                    role: 'user',
-                    parts: [{ text: fullMessage }],
-                  },
-                ],
-                generationConfig: {
-                  temperature: 0.7,
-                  maxOutputTokens: 2048, // Increased from 500 to 2048
-                  topP: 0.95,
-                  topK: 40,
-                },
-              }),
-            }
-          );
-
-          if (geminiResponse.ok) {
-            successfulModel = modelName;
-            console.log(`✅ Successfully using fallback model: ${modelName}`);
-            break;
-          } else {
-            const errorData = await geminiResponse.json().catch(() => ({}));
-            lastError = errorData;
-            console.log(`❌ Fallback model ${modelName} failed:`, errorData.error?.message);
-            
-            // If it's not a "not found" error, break and report it
-            if (geminiResponse.status !== 404) {
-              break;
-            }
-          }
-        } catch (error) {
-          console.error(`❌ Error trying fallback model ${modelName}:`, error);
-          lastError = { error: { message: error.message } };
-        }
       }
     }
 
@@ -346,18 +274,18 @@ Remember: You're a supportive friend, not a replacement for professional therapy
         }, 400);
       }
       
-      // Check for quota/billing errors
-      if (geminiResponse?.status === 429 || errorData.error?.message?.includes('quota')) {
+      // Check if all models failed with "not found" - this takes priority over quota errors
+      if (errorData.error?.message?.includes('not found') || errorData.error?.message?.includes('is not found')) {
+        return c.json({ 
+          error: `⚠️ API Key Error\n\nYour Gemini API key doesn't have access to any models. This could mean:\n\n1. The API key is from Google Cloud Console instead of AI Studio\n   → Get a key from: https://aistudio.google.com/app/apikey\n\n2. Gemini API is not available in your region\n   → Check: https://ai.google.dev/available_regions\n\n3. The API key is invalid or expired\n   → Create a new key at: https://aistudio.google.com/app/apikey\n\n4. Use Demo Mode for testing:\n   → Set CHAT_DEMO_MODE=true\n\nTechnical error: ${errorData.error?.message}` 
+        }, 404);
+      }
+      
+      // Check for quota/billing errors (after checking for "not found")
+      if (geminiResponse?.status === 429 && !errorData.error?.message?.includes('not found')) {
         return c.json({ 
           error: '⚠️ Gemini API quota exceeded. Please check your usage at https://aistudio.google.com/' 
         }, 429);
-      }
-      
-      // Check if all models failed
-      if (errorData.error?.message?.includes('not found')) {
-        return c.json({ 
-          error: `⚠️ API Key Error\n\nYour Gemini API key doesn't have access to any models. This could mean:\n\n1. The API key is from Google Cloud Console instead of AI Studio\n   → Get a key from: https://aistudio.google.com/app/apikey\n\n2. Gemini API is not available in your region\n   → Check: https://ai.google.dev/available_regions\n\n3. The API key is invalid or expired\n   → Create a new key at: https://aistudio.google.com/app/apikey\n\n4. Use Demo Mode for testing:\n   → Set CHAT_DEMO_MODE=true\n\nAvailable models found: ${availableModels.length > 0 ? availableModels.map((m: any) => m.name).join(', ') : 'None'}\n\nTechnical error: ${errorData.error?.message}` 
-        }, 404);
       }
       
       return c.json({ 

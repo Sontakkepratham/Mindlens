@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OnboardingScreen } from "./components/OnboardingScreen";
 import { ConsentScreen } from "./components/ConsentScreen";
 import { QuestionnaireScreen } from "./components/QuestionnaireScreen";
@@ -20,6 +20,7 @@ import { ProfileDashboardScreen } from "./components/ProfileDashboardScreen";
 import { AboutUsScreen } from "./components/AboutUsScreen";
 import { ConnectWithUsScreen } from "./components/ConnectWithUsScreen";
 import { AIChatScreen } from "./components/AIChatScreen";
+import { SecretSettingsDialog } from "./components/SecretSettingsDialog";
 import type { ProfileData } from "./components/ProfileDashboardScreen";
 import {
   checkSession,
@@ -64,12 +65,28 @@ export default function App() {
     string | undefined
   >(session.email);
   const [responses, setResponses] = useState<number[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [selectedCounselor, setSelectedCounselor] =
     useState("Dr. Sarah Chen");
   const [showSetup, setShowSetup] = useState(true);
   const [personalityResults, setPersonalityResults] =
     useState<PersonalityResults | undefined>(undefined);
   const [profileData, setProfileData] = useState<ProfileData | undefined>(undefined);
+  const [secretDialogOpen, setSecretDialogOpen] = useState(false);
+
+  // Keyboard shortcut listener (Ctrl+Shift+K)
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+        e.preventDefault();
+        console.log('🔐 Opening secret settings dialog...');
+        setSecretDialogOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   const handleStartAssessment = () => {
     setCurrentScreen("consent");
@@ -79,10 +96,25 @@ export default function App() {
     setCurrentScreen("questionnaire");
   };
 
-  const handleQuestionnaireSubmit = (data: number[]) => {
+  const handleQuestionnaireSubmit = async (data: number[]) => {
     setResponses(data);
-    // Simulate camera emotion analysis in the background
-    // In production, this would be collected during the questionnaire or in a separate step
+    
+    // Save assessment to backend and get sessionId
+    const session = checkSession();
+    if (session.accessToken && session.userId) {
+      try {
+        const phqScore = data.reduce((a, b) => a + b, 0);
+        const sessionId = `SESSION-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        console.log('Saving assessment to backend...');
+        // Note: You would typically call a backend endpoint here to save the assessment
+        // For now, we'll just store the sessionId
+        setCurrentSessionId(sessionId);
+      } catch (error) {
+        console.error('Failed to save assessment:', error);
+      }
+    }
+    
     console.log(
       "PHQ-9 responses submitted. Camera-based emotion analysis included in model.",
     );
@@ -302,6 +334,8 @@ export default function App() {
         {currentScreen === "results" && (
           <ResultsScreen
             phqScore={responses.reduce((a, b) => a + b, 0)}
+            sessionId={currentSessionId}
+            accessToken={checkSession().accessToken}
             onViewRecommendations={handleViewRecommendations}
             onViewSelfCare={handleViewSelfCare}
           />
@@ -389,6 +423,12 @@ export default function App() {
           />
         )}
       </div>
+      
+      {/* Secret Settings Dialog */}
+      <SecretSettingsDialog
+        isOpen={secretDialogOpen}
+        onClose={() => setSecretDialogOpen(false)}
+      />
     </div>
   );
 }
