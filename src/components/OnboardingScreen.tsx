@@ -1,13 +1,13 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon, Bot } from 'lucide-react';
+import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon, Bot, Beaker } from 'lucide-react';
 import React from 'react';
 import mindlensLogo from 'figma:asset/cd1d8896983c70c4f2f82063f4b34137a63890b4.png';
 
 interface OnboardingScreenProps {
   onStart: () => void;
   onStartPersonalityTest?: () => void;
-  onStartStroopTest?: () => void;
+  onOpenMindLensLab?: () => void;
   onViewProfile?: () => void;
   onViewAboutUs?: () => void;
   onViewConnectWithUs?: () => void;
@@ -18,7 +18,7 @@ interface OnboardingScreenProps {
 export function OnboardingScreen({ 
   onStart, 
   onStartPersonalityTest, 
-  onStartStroopTest,
+  onOpenMindLensLab,
   onViewProfile,
   onViewAboutUs,
   onViewConnectWithUs,
@@ -202,16 +202,16 @@ export function OnboardingScreen({
             <p className="text-sm text-secondary-foreground">Take a free test</p>
           </button>
 
-          {onStartStroopTest && (
+          {onOpenMindLensLab && (
             <button
-              onClick={onStartStroopTest}
-              className="w-full mt-3 p-4 bg-accent/50 border-2 border-primary/30 rounded-lg hover:shadow-md transition-all group"
+              onClick={onOpenMindLensLab}
+              className="w-full mt-3 p-4 bg-gradient-to-br from-accent/50 to-primary/20 border-2 border-primary/40 rounded-lg hover:shadow-lg transition-all group hover:from-accent/60 hover:to-primary/30"
             >
               <div className="flex items-center justify-center gap-2 mb-1">
-                <Brain className="w-5 h-5 text-primary group-hover:animate-pulse" />
-                <span className="text-foreground">Emotional Stroop Test</span>
+                <Beaker className="w-5 h-5 text-primary group-hover:animate-pulse" />
+                <span className="text-foreground">MindLens Lab</span>
               </div>
-              <p className="text-sm text-muted-foreground">Measure emotional interference</p>
+              <p className="text-sm text-primary">Explore psychology games & cognitive tests</p>
             </button>
           )}
 

@@ -21,6 +21,8 @@ import { AboutUsScreen } from "./components/AboutUsScreen";
 import { ConnectWithUsScreen } from "./components/ConnectWithUsScreen";
 import { AIChatScreen } from "./components/AIChatScreen";
 import { SecretSettingsDialog } from "./components/SecretSettingsDialog";
+import { EmotionalMicroStoriesGame } from "./components/EmotionalMicroStoriesGame";
+import { MindLensLab } from "./components/MindLensLab";
 import type { ProfileData } from "./components/ProfileDashboardScreen";
 import {
   checkSession,
@@ -49,7 +51,9 @@ type Screen =
   | "profile"
   | "about-us"
   | "connect-with-us"
-  | "ai-chat";
+  | "ai-chat"
+  | "emotional-stories"
+  | "mind-lens-lab";
 
 export default function App() {
   // Check for existing session on load
@@ -259,9 +263,17 @@ export default function App() {
     setCurrentScreen("ai-chat");
   };
 
+  const handleStartEmotionalStories = () => {
+    setCurrentScreen("emotional-stories");
+  };
+
+  const handleOpenMindLensLab = () => {
+    setCurrentScreen("mind-lens-lab");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className={`w-full ${currentScreen === "ai-chat" ? "max-w-4xl" : "max-w-md"}`}>
+      <div className={`w-full ${currentScreen === "ai-chat" || currentScreen === "mind-lens-lab" ? "max-w-4xl" : "max-w-md"}`}>
         {/* Authentication Screens */}
 
         {currentScreen === "signin" && (
@@ -315,12 +327,12 @@ export default function App() {
           <OnboardingScreen 
             onStart={handleStartAssessment}
             onStartPersonalityTest={handleStartPersonalityTest}
-            onStartStroopTest={handleStartStroopTest}
             onViewProfile={handleViewProfile}
             onViewAboutUs={handleViewAboutUs}
             onViewConnectWithUs={handleViewConnectWithUs}
             onViewDetailedReport={responses.length > 0 ? handleViewDetailedReport : undefined}
             onStartAIChat={handleStartAIChat}
+            onOpenMindLensLab={handleOpenMindLensLab}
           />
         )}
         {currentScreen === "consent" && (
@@ -385,7 +397,7 @@ export default function App() {
         )}
         {currentScreen === "stroop-test" && (
           <StroopTest
-            onBack={() => setCurrentScreen("onboarding")}
+            onBack={() => setCurrentScreen("mind-lens-lab")}
           />
         )}
         {currentScreen === "detailed-report" && (
@@ -420,6 +432,18 @@ export default function App() {
           <AIChatScreen
             onBack={() => setCurrentScreen("onboarding")}
             onSignOut={handleSignOut}
+          />
+        )}
+        {currentScreen === "emotional-stories" && (
+          <EmotionalMicroStoriesGame
+            onBack={() => setCurrentScreen("mind-lens-lab")}
+          />
+        )}
+        {currentScreen === "mind-lens-lab" && (
+          <MindLensLab
+            onBack={() => setCurrentScreen("onboarding")}
+            onStartStroopTest={handleStartStroopTest}
+            onStartEmotionalStories={handleStartEmotionalStories}
           />
         )}
       </div>
