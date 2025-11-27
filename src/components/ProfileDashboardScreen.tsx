@@ -7,6 +7,7 @@ interface ProfileDashboardScreenProps {
   userEmail?: string;
   onBack: () => void;
   onSave: (profileData: ProfileData) => void;
+  onNavigate?: (screen: string) => void;
 }
 
 export interface ProfileData {
@@ -26,7 +27,7 @@ export interface ProfileData {
   allergies: string;
 }
 
-export function ProfileDashboardScreen({ userEmail, onBack, onSave }: ProfileDashboardScreenProps) {
+export function ProfileDashboardScreen({ userEmail, onBack, onSave, onNavigate }: ProfileDashboardScreenProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [formData, setFormData] = React.useState<ProfileData>({
     fullName: '',
@@ -399,6 +400,33 @@ export function ProfileDashboardScreen({ userEmail, onBack, onSave }: ProfileDas
             All data handling complies with HIPAA regulations. Your information will never be shared without your explicit consent.
           </p>
         </div>
+
+        {/* Referral Card */}
+        {onNavigate && (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 mb-6">
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center flex-shrink-0">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-foreground font-semibold mb-2">Help Someone You Care About</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Know someone who could benefit from professional therapy or counseling? 
+                    Refer them to us and our team will reach out with compassionate support.
+                  </p>
+                  <Button
+                    onClick={() => onNavigate('referral')}
+                    className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    Refer Someone
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Back Button */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-6">

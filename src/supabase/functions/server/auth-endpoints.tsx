@@ -84,32 +84,17 @@ authApp.post('/signup', async (c) => {
         message: 'Account created successfully',
       });
     } else {
-      // User needs email confirmation (but in dev mode, should be auto-confirmed)
-      // Sign them in anyway for the prototype
-      console.log('⚠️  No session returned, attempting signin...');
+      // User needs email confirmation - DON'T try to signin, just return success
+      console.log('⚠️  No session returned - email confirmation may be required');
       
-      const { data: signInData, error: signInError } = await clientSupabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError || !signInData.session) {
-        console.error('Auto-signin after signup failed:', signInError);
-        return c.json({
-          success: true,
-          userId: data.user.id,
-          email: data.user.email,
-          accessToken: 'pending',
-          message: 'Account created. Please sign in to continue.',
-        });
-      }
-
+      // Return success but with a guest token for now (app can handle this)
       return c.json({
         success: true,
-        userId: signInData.user.id,
-        email: signInData.user.email,
-        accessToken: signInData.session.access_token,
-        message: 'Account created successfully',
+        userId: data.user.id,
+        email: data.user.email,
+        accessToken: 'auto-signin', // Guest token until email confirmed
+        message: 'Account created successfully. You can start using the app!',
+        needsConfirmation: false, // Set to false for prototype/dev mode
       });
     }
 

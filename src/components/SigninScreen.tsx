@@ -67,7 +67,7 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
         
         // If it's an invalid credentials error, suggest signing up
         if (errorMsg.includes('Invalid') || errorMsg.includes('credentials') || errorMsg.includes('password')) {
-          setError('Invalid email or password. Don\'t have an account yet? Click "Create New Account" below to sign up.');
+          setError('❌ Account not found or incorrect password. If you don\'t have an account yet, please click "Create New Account" below to sign up first.');
         } else {
           setError(errorMsg);
         }
@@ -136,6 +136,27 @@ export function SigninScreen({ onSigninSuccess, onSwitchToSignup }: SigninScreen
               </div>
             </div>
           </Alert>
+        )}
+
+        {/* Helpful Tip - Show when there's an error */}
+        {error && error.includes('Account not found') && (
+          <Card className="border-blue-200 bg-blue-50">
+            <div className="p-5">
+              <h3 className="text-blue-900 mb-2 flex items-center gap-2">
+                <span>💡</span> First Time Here?
+              </h3>
+              <p className="text-blue-800 text-sm mb-3">
+                If this is your first time using MindLens, you'll need to create an account first. 
+                Click the "Create New Account" button below to get started!
+              </p>
+              <Button
+                onClick={onSwitchToSignup}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Create My Account Now
+              </Button>
+            </div>
+          </Card>
         )}
 
         {/* Sign In Form */}

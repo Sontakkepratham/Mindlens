@@ -3,8 +3,7 @@
  * HIPAA-compliant encryption for sensitive patient data
  */
 
-import { crypto } from 'https://deno.land/std@0.224.0/crypto/mod.ts';
-import { encodeBase64, decodeBase64 } from 'https://deno.land/std@0.224.0/encoding/base64.ts';
+import { encodeBase64, decodeBase64 } from 'jsr:@std/encoding@1/base64';
 
 // Encryption configuration
 const ALGORITHM = 'AES-GCM';
@@ -28,7 +27,7 @@ function getEncryptionKey(): Uint8Array {
   
   // Generate a new key (for development only)
   // WARNING: In production, use a persistent key from Secret Manager
-  const key = crypto.getRandomValues(new Uint8Array(32)); // 256 bits
+  const key = globalThis.crypto.getRandomValues(new Uint8Array(32)); // 256 bits
   console.warn('⚠️  Using ephemeral encryption key. Set ENCRYPTION_KEY_BASE64 for production.');
   console.log('Generated key (base64):', encodeBase64(key));
   return key;
@@ -47,10 +46,10 @@ export async function encrypt(data: any): Promise<string> {
     const plaintextBytes = new TextEncoder().encode(plaintext);
     
     // Generate random IV (Initialization Vector)
-    const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+    const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_LENGTH));
     
     // Import key for Web Crypto API
-    const key = await crypto.subtle.importKey(
+    const key = await globalThis.crypto.subtle.importKey(
       'raw',
       ENCRYPTION_KEY,
       { name: ALGORITHM, length: KEY_LENGTH },
@@ -59,7 +58,7 @@ export async function encrypt(data: any): Promise<string> {
     );
     
     // Encrypt the data
-    const encryptedBytes = await crypto.subtle.encrypt(
+    const encryptedBytes = await globalThis.crypto.subtle.encrypt(
       { name: ALGORITHM, iv },
       key,
       plaintextBytes
@@ -92,7 +91,7 @@ export async function decrypt(encryptedData: string): Promise<any> {
     const encryptedBytes = combined.slice(IV_LENGTH);
     
     // Import key for Web Crypto API
-    const key = await crypto.subtle.importKey(
+    const key = await globalThis.crypto.subtle.importKey(
       'raw',
       ENCRYPTION_KEY,
       { name: ALGORITHM, length: KEY_LENGTH },
@@ -101,7 +100,7 @@ export async function decrypt(encryptedData: string): Promise<any> {
     );
     
     // Decrypt the data
-    const decryptedBytes = await crypto.subtle.decrypt(
+    const decryptedBytes = await globalThis.crypto.subtle.decrypt(
       { name: ALGORITHM, iv },
       key,
       encryptedBytes
@@ -123,7 +122,7 @@ export async function decrypt(encryptedData: string): Promise<any> {
 export async function hashIdentifier(identifier: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(identifier);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
@@ -170,7 +169,7 @@ export async function decryptFields(data: any, fields: string[]): Promise<any> {
  * Run this once and store the output in ENCRYPTION_KEY_BASE64 env var
  */
 export function generateEncryptionKey(): string {
-  const key = crypto.getRandomValues(new Uint8Array(32));
+  const key = globalThis.crypto.getRandomValues(new Uint8Array(32));
   return encodeBase64(key);
 }
 

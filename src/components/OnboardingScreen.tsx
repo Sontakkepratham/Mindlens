@@ -1,6 +1,6 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon, Bot, Beaker } from 'lucide-react';
+import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon, Bot, Beaker, Heart } from 'lucide-react';
 import React from 'react';
 import mindlensLogo from 'figma:asset/cd1d8896983c70c4f2f82063f4b34137a63890b4.png';
 
@@ -14,6 +14,7 @@ interface OnboardingScreenProps {
   onViewConnectWithUs?: () => void;
   onViewDetailedReport?: () => void;
   onStartAIChat?: () => void;
+  onReferSomeone?: () => void;
 }
 
 export function OnboardingScreen({ 
@@ -25,7 +26,8 @@ export function OnboardingScreen({
   onViewAboutUs,
   onViewConnectWithUs,
   onViewDetailedReport,
-  onStartAIChat
+  onStartAIChat,
+  onReferSomeone
 }: OnboardingScreenProps) {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -83,6 +85,15 @@ export function OnboardingScreen({
               >
                 <ReportIcon className="w-5 h-5 text-muted-foreground" />
                 <span className="text-foreground">View Detailed Report</span>
+              </button>
+            )}
+            {onReferSomeone && (
+              <button
+                onClick={() => handleDropdownItemClick(onReferSomeone)}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left"
+              >
+                <Heart className="w-5 h-5 text-muted-foreground" />
+                <span className="text-foreground">Refer Someone</span>
               </button>
             )}
             <div className="border-t border-border my-2"></div>

@@ -5,6 +5,7 @@
       "private": true,
       "dependencies": {
           "@google-cloud/bigquery": "^7.3.0",
+          "@jsr/std__encoding": "^1",
           "@jsr/supabase__supabase-js": "^2.49.8",
           "@radix-ui/react-accordion": "^1.2.3",
           "@radix-ui/react-alert-dialog": "^1.1.6",

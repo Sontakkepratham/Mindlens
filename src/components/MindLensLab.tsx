@@ -10,7 +10,8 @@ import {
   Target,
   TrendingUp,
   Lock,
-  CheckCircle2
+  CheckCircle2,
+  Heart
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -18,9 +19,11 @@ interface MindLensLabProps {
   onBack: () => void;
   onStartAffectiveGoNoGo: () => void;
   onStartEmotionalStories: () => void;
+  onStartEmotionJourney: () => void;
   completedTests?: {
     affectiveGoNoGo: boolean;
     emotionalStories: boolean;
+    emotionJourney: boolean;
   };
 }
 
@@ -28,7 +31,8 @@ export function MindLensLab({
   onBack, 
   onStartAffectiveGoNoGo, 
   onStartEmotionalStories,
-  completedTests = { affectiveGoNoGo: false, emotionalStories: false }
+  onStartEmotionJourney,
+  completedTests = { affectiveGoNoGo: false, emotionalStories: false, emotionJourney: false }
 }: MindLensLabProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
@@ -58,6 +62,19 @@ export function MindLensLab({
       metrics: ['Interpretation Bias', 'Emotional Range', 'Consistency'],
       completed: completedTests.emotionalStories,
       onClick: onStartEmotionalStories
+    },
+    {
+      id: 'emotionJourney',
+      title: 'Emotion Journey Quest',
+      subtitle: 'Interactive emotional intelligence game',
+      description: 'Experience animated stories where you identify emotions and make choices. Develop empathy and understand emotional reactions through engaging visual novel-style gameplay.',
+      icon: Heart,
+      color: '#F472B6',
+      duration: '10-15 min',
+      difficulty: 'Moderate',
+      metrics: ['Emotional Recognition', 'Empathy Score', 'Decision Making'],
+      completed: completedTests.emotionJourney,
+      onClick: onStartEmotionJourney
     }
   ];
 
@@ -132,7 +149,7 @@ export function MindLensLab({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 onHoverStart={() => setHoveredCard(test.id)}
-                onHoverLeave={() => setHoveredCard(null)}
+                onHoverEnd={() => setHoveredCard(null)}
               >
                 <Card 
                   className="relative overflow-hidden bg-card border-border hover:border-primary/40 transition-all duration-300 cursor-pointer group"

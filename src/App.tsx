@@ -26,7 +26,10 @@ import { AffectiveGoNoGo } from "./components/affective-go-no-go/AffectiveGoNoGo
 import { MindLensDiscovery } from "./components/mind-lens-discovery/MindLensDiscovery";
 import { CoupleTest } from "./components/couple-test/CoupleTest";
 import type { CoupleTestResults } from "./components/couple-test/CoupleTest";
+import { EmotionJourneyQuestNew } from "./components/emotion-journey/EmotionJourneyQuestNew";
+import type { GameResults } from "./components/emotion-journey/EmotionJourneyQuest";
 import type { ProfileData } from "./components/ProfileDashboardScreen";
+import { ReferralScreen } from "./components/ReferralScreen";
 import {
   checkSession,
   storeSession,
@@ -58,7 +61,9 @@ type Screen =
   | "emotional-stories"
   | "mind-lens-lab"
   | "mind-lens-discovery"
-  | "couple-test";
+  | "couple-test"
+  | "emotion-journey"
+  | "referral";
 
 export default function App() {
   // Check for existing session on load
@@ -292,6 +297,15 @@ export default function App() {
     setCurrentScreen("onboarding");
   };
 
+  const handleStartEmotionJourney = () => {
+    setCurrentScreen("emotion-journey");
+  };
+
+  const handleEmotionJourneyComplete = (results: GameResults) => {
+    console.log('Emotion Journey completed:', results);
+    setCurrentScreen("mind-lens-lab");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className={`w-full ${currentScreen === "ai-chat" || currentScreen === "mind-lens-lab" ? "max-w-4xl" : "max-w-md"}`}>
@@ -354,6 +368,7 @@ export default function App() {
             onViewDetailedReport={responses.length > 0 ? handleViewDetailedReport : undefined}
             onStartAIChat={handleStartAIChat}
             onOpenMindLensLab={handleOpenMindLensLab}
+            onReferSomeone={() => setCurrentScreen("referral")}
           />
         )}
         {currentScreen === "consent" && (
@@ -437,6 +452,7 @@ export default function App() {
               setProfileData(data);
               console.log('Profile data saved:', data);
             }}
+            onNavigate={(screen: string) => setCurrentScreen(screen as Screen)}
           />
         )}
         {currentScreen === "about-us" && (
@@ -465,6 +481,7 @@ export default function App() {
             onBack={() => setCurrentScreen("onboarding")}
             onStartAffectiveGoNoGo={handleStartAffectiveGoNoGo}
             onStartEmotionalStories={handleStartEmotionalStories}
+            onStartEmotionJourney={handleStartEmotionJourney}
           />
         )}
         {currentScreen === "mind-lens-discovery" && (
@@ -480,8 +497,20 @@ export default function App() {
         )}
         {currentScreen === "couple-test" && (
           <CoupleTest
-            onComplete={handleCoupleTestComplete}
             onBack={() => setCurrentScreen("mind-lens-discovery")}
+            onComplete={handleCoupleTestComplete}
+          />
+        )}
+        {currentScreen === "emotion-journey" && (
+          <EmotionJourneyQuestNew
+            onBack={() => setCurrentScreen("mind-lens-lab")}
+            onComplete={handleEmotionJourneyComplete}
+          />
+        )}
+        {currentScreen === "referral" && (
+          <ReferralScreen
+            onBack={() => setCurrentScreen("profile")}
+            userEmail={userEmail}
           />
         )}
       </div>

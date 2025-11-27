@@ -49,6 +49,7 @@
         '@radix-ui/react-accordion@1.2.3': '@radix-ui/react-accordion',
         '@jsr/supabase__supabase-js@2.49.8': '@jsr/supabase__supabase-js',
         '@jsr/supabase__supabase-js@2': '@jsr/supabase__supabase-js',
+        '@jsr/std__encoding@1': '@jsr/std__encoding',
         '@google-cloud/bigquery@7.3.0': '@google-cloud/bigquery',
         '@': path.resolve(__dirname, './src'),
       },
