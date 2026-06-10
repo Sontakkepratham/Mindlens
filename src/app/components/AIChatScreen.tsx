@@ -27,6 +27,7 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
   const [hasCrisisIndicator, setHasCrisisIndicator] = useState(false);
   const [authCheckDone, setAuthCheckDone] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [isRealAI, setIsRealAI] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -186,37 +187,21 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
           timestamp: data.timestamp,
         };
         
-        // Check if demo mode is active (message contains demo mode tag)
-        if (data.response?.includes('[Demo Mode')) {
+        // Update mode flags from backend response
+        if (data.demoMode) {
           setIsDemoMode(true);
+          setIsRealAI(false);
+        } else if (data.aiProvider === 'gemini') {
+          setIsRealAI(true);
+          setIsDemoMode(false);
         }
 
-        // DEBUG: Show what Gemini actually returned
+        // Log debug info to console only — never show raw debug in chat
         if (data.debugInfo) {
-          console.error('🐛 GEMINI DEBUG INFO:', data.debugInfo);
-          
-          let debugMessage = '🔍 DEBUG: Gemini Issue Detected\n\n';
-          
-          if (data.debugInfo.reason === 'SAFETY_FILTER') {
-            debugMessage += '❌ **Safety Filter Blocked**\n\nGemini\'s safety filter blocked the response. This often happens with mental health topics.\n\n**Solution:** Enable Demo Mode to bypass Gemini:\n1. Set CHAT_DEMO_MODE=true\n2. Refresh the app\n3. Try again\n\nSafety Ratings:\n' + JSON.stringify(data.debugInfo.safetyRatings, null, 2);
-          } else if (data.debugInfo.reason === 'NO_CANDIDATES') {
-            debugMessage += '❌ **No Response Candidates**\n\nGemini returned no response candidates.\n\n**Possible Causes:**\n1. System prompt was blocked\n2. API regional restrictions\n3. Temporary API issue\n\n**Solution:** Enable Demo Mode:\nSet CHAT_DEMO_MODE=true\n\nFull Response:\n' + JSON.stringify(data.debugInfo.fullResponse, null, 2);
-          } else if (data.debugInfo.reason === 'PROMPT_BLOCKED') {
-            debugMessage += '❌ **Prompt Blocked**\n\nYour message was blocked: ' + data.debugInfo.promptFeedback?.blockReason + '\n\n**Solution:** Try a simpler message or enable Demo Mode';
-          } else {
-            debugMessage += '❌ **Unknown Issue**\n\nReason: ' + data.debugInfo.reason + '\nFinish Reason: ' + data.debugInfo.finishReason + '\n\n**Solution:** Enable Demo Mode:\nSet CHAT_DEMO_MODE=true';
-          }
-          
-          const debugMsg: Message = {
-            role: 'assistant',
-            content: debugMessage,
-            timestamp: new Date().toISOString(),
-          };
-          
-          setMessages(prev => [...prev, aiMessage, debugMsg]);
-        } else {
-          setMessages(prev => [...prev, aiMessage]);
+          console.warn('🐛 Gemini debug info:', data.debugInfo);
         }
+
+        setMessages(prev => [...prev, aiMessage]);
 
         setConversationId(data.conversationId);
         
@@ -266,8 +251,15 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
               />
               <div>
                 <CardTitle className="text-foreground">MindLens AI Companion</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Your supportive friend, always here to listen
+                <CardDescription className="text-muted-foreground flex items-center gap-1.5">
+                  {isRealAI ? (
+                    <>
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      Powered by Gemini AI
+                    </>
+                  ) : (
+                    'Your supportive friend, always here to listen'
+                  )}
                 </CardDescription>
               </div>
             </div>
@@ -287,21 +279,13 @@ export function AIChatScreen({ onBack, onSignOut }: AIChatScreenProps) {
 
       <CardContent className="p-0">
         {/* Demo Mode Banner */}
-        {isDemoMode && (
-          <Alert className="m-4 border-primary/30 bg-primary/5">
-            <MessageCircle className="h-4 w-4 text-primary" />
-            <AlertDescription className="text-primary">
-              <strong>🎭 Demo Mode Active</strong>
+        {isDemoMode && !isRealAI && (
+          <Alert className="m-4 border-amber-400/40 bg-amber-50">
+            <MessageCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <strong>Demo Mode Active</strong>
               <div className="mt-1 text-sm">
-                You're chatting with simulated AI responses for testing. To use real Gemini AI, get a free API key from{' '}
-                <a 
-                  href="https://aistudio.google.com/app/apikey" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="underline hover:text-primary/80"
-                >
-                  Google AI Studio
-                </a>.
+                Using simulated responses. Connect a Gemini API key to enable the real AI companion.
               </div>
             </AlertDescription>
           </Alert>

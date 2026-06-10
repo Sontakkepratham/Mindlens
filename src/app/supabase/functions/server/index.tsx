@@ -13,6 +13,7 @@ import unifiedDataApp from './unified-data-endpoints.tsx';
 import chatApp from './chat-endpoints.tsx';
 import aiInsightsApp from './ai-insights-endpoints.tsx';
 import adminApp from './admin-endpoints.tsx';
+import migrationApp from './migration-endpoints.tsx';
 
 const app = new Hono();
 
@@ -41,8 +42,81 @@ app.route('/make-server-aa629e1b/ai-insights', aiInsightsApp);
 // Mount admin endpoints (secret settings)
 app.route('/make-server-aa629e1b/admin', adminApp);
 
+// Mount migration endpoints (product launch schema)
+app.route('/make-server-aa629e1b/migration', migrationApp);
+
 // Mount ML endpoints
 app.route('/make-server-aa629e1b/ml', mlApp);
+
+// Session booking endpoint
+app.post('/make-server-aa629e1b/session-booking', async (c) => {
+  try {
+    const bookingData = await c.req.json();
+    
+    // Validate required fields
+    if (!bookingData.sessionType || !bookingData.selectedDate || !bookingData.selectedTime || !bookingData.name || !bookingData.email || !bookingData.phone) {
+      return c.json({ error: 'Missing required fields' }, 400);
+    }
+
+    // Generate unique booking ID
+    const bookingId = `booking-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Store booking in KV store
+    const bookingRecord = {
+      id: bookingId,
+      ...bookingData,
+      createdAt: new Date().toISOString(),
+      status: 'confirmed', // confirmed, cancelled, completed, no-show
+    };
+
+    await kv.set(`session-booking:${bookingId}`, bookingRecord);
+    
+    // Also store in a list for easy retrieval
+    const allBookings = await kv.get('session-booking:list') || [];
+    allBookings.push(bookingId);
+    await kv.set('session-booking:list', allBookings);
+
+    console.log('✅ Session booked:', {
+      id: bookingId,
+      type: bookingData.sessionType,
+      date: bookingData.selectedDate,
+      time: bookingData.selectedTime,
+      name: bookingData.name,
+    });
+
+    return c.json({ 
+      success: true, 
+      bookingId,
+      message: 'Session booked successfully!' 
+    });
+  } catch (error: any) {
+    console.error('❌ Session booking error:', error);
+    return c.json({ error: error.message || 'Failed to book session' }, 500);
+  }
+});
+
+// Get all session bookings (admin endpoint)
+app.get('/make-server-aa629e1b/session-bookings', async (c) => {
+  try {
+    const bookingList = await kv.get('session-booking:list') || [];
+    const bookings = [];
+
+    for (const bookingId of bookingList) {
+      const booking = await kv.get(`session-booking:${bookingId}`);
+      if (booking) {
+        bookings.push(booking);
+      }
+    }
+
+    // Sort by date (newest first)
+    bookings.sort((a, b) => new Date(b.selectedDate).getTime() - new Date(a.selectedDate).getTime());
+
+    return c.json({ success: true, bookings });
+  } catch (error: any) {
+    console.error('❌ Failed to fetch bookings:', error);
+    return c.json({ error: error.message || 'Failed to fetch bookings' }, 500);
+  }
+});
 
 // Referral endpoint
 app.post('/make-server-aa629e1b/referral', async (c) => {
@@ -137,6 +211,8 @@ app.get('/', (c) => {
       '/make-server-aa629e1b/ml',
       '/make-server-aa629e1b/referral',
       '/make-server-aa629e1b/referrals',
+      '/make-server-aa629e1b/session-booking',
+      '/make-server-aa629e1b/session-bookings',
     ],
   });
 });

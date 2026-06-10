@@ -1,6 +1,6 @@
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon, Bot, Beaker, Heart } from 'lucide-react';
+import { Brain, FileText, Camera, Sparkles, MoreVertical, User, Info, MessageCircle, FileText as ReportIcon, Bot, Beaker, Heart, Calendar, Rocket } from 'lucide-react';
 import React from 'react';
 import mindlensLogo from 'figma:asset/cd1d8896983c70c4f2f82063f4b34137a63890b4.png';
 
@@ -15,11 +15,13 @@ interface OnboardingScreenProps {
   onViewDetailedReport?: () => void;
   onStartAIChat?: () => void;
   onReferSomeone?: () => void;
+  onBookSession?: () => void;
+  onViewProductLaunch?: () => void;
 }
 
-export function OnboardingScreen({ 
-  onStart, 
-  onStartPersonalityTest, 
+export function OnboardingScreen({
+  onStart,
+  onStartPersonalityTest,
   onOpenMindLensDiscovery,
   onOpenMindLensLab,
   onViewProfile,
@@ -27,7 +29,9 @@ export function OnboardingScreen({
   onViewConnectWithUs,
   onViewDetailedReport,
   onStartAIChat,
-  onReferSomeone
+  onReferSomeone,
+  onBookSession,
+  onViewProductLaunch
 }: OnboardingScreenProps) {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -123,6 +127,18 @@ export function OnboardingScreen({
                 <Bot className="w-5 h-5 text-muted-foreground" />
                 <span className="text-foreground">Start AI Chat</span>
               </button>
+            )}
+            {onViewProductLaunch && (
+              <>
+                <div className="border-t border-border my-2"></div>
+                <button
+                  onClick={() => handleDropdownItemClick(onViewProductLaunch)}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors text-left"
+                >
+                  <Rocket className="w-5 h-5 text-[#7B9FDB]" />
+                  <span className="text-foreground">Product Launch Setup</span>
+                </button>
+              </>
             )}
           </div>
         )}
@@ -238,6 +254,19 @@ export function OnboardingScreen({
                 <span className="text-foreground">MindLens AI</span>
               </div>
               <p className="text-sm text-primary">Your compassionate companion, always here to listen</p>
+            </button>
+          )}
+
+          {onBookSession && (
+            <button
+              onClick={onBookSession}
+              className="w-full mt-3 p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg hover:shadow-lg transition-all group hover:border-green-400"
+            >
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Calendar className="w-5 h-5 text-green-600 group-hover:animate-pulse" />
+                <span className="text-foreground font-medium">Book a Session</span>
+              </div>
+              <p className="text-sm text-green-700">Schedule online or in-person therapy</p>
             </button>
           )}
         </div>

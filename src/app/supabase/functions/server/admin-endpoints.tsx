@@ -193,6 +193,15 @@ export const getGeminiApiKey = async (): Promise<string | null> => {
 
 // Helper function to check if demo mode is enabled (checks KV store first, then env)
 export const isDemoMode = async (): Promise<boolean> => {
+  // Check if we have a valid API key first
+  const apiKey = await getGeminiApiKey();
+  
+  // If we have a valid API key, NEVER use demo mode
+  if (apiKey && apiKey.length > 20) {
+    return false;
+  }
+  
+  // Only check demo mode settings if no API key is available
   // Check KV store first
   const kvMode = await kv.get('chat_demo_mode');
   if (kvMode !== null) {

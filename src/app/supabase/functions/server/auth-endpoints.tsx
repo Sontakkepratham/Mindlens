@@ -32,23 +32,14 @@ authApp.post('/signup', async (c) => {
 
     console.log('Creating new user account:', email);
 
-    // Use client Supabase for signup (more reliable for password auth)
-    const clientSupabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    );
-
-    // Create user with Supabase Auth
-    const { data, error } = await clientSupabase.auth.signUp({
+    // Use admin API to create user with auto-confirmation (no email server needed)
+    const { data, error } = await supabase.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: {
-          name: name || email.split('@')[0],
-          created_at: new Date().toISOString(),
-        },
-        // Email confirmation will be handled by Supabase settings
-        emailRedirectTo: undefined,
+      email_confirm: true, // Auto-confirm email since we don't have email server configured
+      user_metadata: {
+        name: name || email.split('@')[0],
+        created_at: new Date().toISOString(),
       },
     });
 
@@ -56,7 +47,7 @@ authApp.post('/signup', async (c) => {
       console.error('Signup error:', error);
       
       // Handle specific errors
-      if (error.message.includes('already registered') || error.message.includes('already exists')) {
+      if (error.message.includes('already registered') || error.message.includes('already exists') || error.message.includes('duplicate')) {
         return c.json({ 
           error: 'This email is already registered. Please sign in instead.' 
         }, 409);
@@ -71,32 +62,40 @@ authApp.post('/signup', async (c) => {
       return c.json({ error: 'User creation failed' }, 500);
     }
 
-    console.log('✅ User created successfully:', data.user.id);
+    console.log('✅ User created successfully with auto-confirmation:', data.user.id);
 
-    // Check if we got a session (auto-confirmed) or need email confirmation
-    if (data.session) {
-      // User is auto-confirmed and signed in
+    // Now sign the user in to get a session
+    const clientSupabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+
+    const { data: signInData, error: signInError } = await clientSupabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError || !signInData.session) {
+      console.error('Auto-signin after signup failed:', signInError);
+      // User is created but signin failed - tell them to sign in manually
       return c.json({
         success: true,
         userId: data.user.id,
         email: data.user.email,
-        accessToken: data.session.access_token,
-        message: 'Account created successfully',
-      });
-    } else {
-      // User needs email confirmation - DON'T try to signin, just return success
-      console.log('⚠️  No session returned - email confirmation may be required');
-      
-      // Return success but with a guest token for now (app can handle this)
-      return c.json({
-        success: true,
-        userId: data.user.id,
-        email: data.user.email,
-        accessToken: 'auto-signin', // Guest token until email confirmed
-        message: 'Account created successfully. You can start using the app!',
-        needsConfirmation: false, // Set to false for prototype/dev mode
+        message: 'Account created successfully! Please sign in to continue.',
+        needsSignIn: true,
       });
     }
+
+    console.log('✅ User auto-signed in after signup:', signInData.user.id);
+
+    return c.json({
+      success: true,
+      userId: signInData.user.id,
+      email: signInData.user.email,
+      accessToken: signInData.session.access_token,
+      message: 'Account created successfully',
+    });
 
   } catch (error: any) {
     console.error('Signup endpoint error:', error);

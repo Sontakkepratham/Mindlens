@@ -30,6 +30,8 @@ import { EmotionJourneyQuestNew } from "./components/emotion-journey/EmotionJour
 import type { GameResults } from "./components/emotion-journey/EmotionJourneyQuest";
 import type { ProfileData } from "./components/ProfileDashboardScreen";
 import { ReferralScreen } from "./components/ReferralScreen";
+import { SessionBookingScreen } from "./components/SessionBookingScreen";
+import { ProductLaunchScreen } from "./components/ProductLaunchScreen";
 import {
   checkSession,
   storeSession,
@@ -63,7 +65,9 @@ type Screen =
   | "mind-lens-discovery"
   | "couple-test"
   | "emotion-journey"
-  | "referral";
+  | "referral"
+  | "session-booking"
+  | "product-launch";
 
 export default function App() {
   // Check for existing session on load
@@ -165,6 +169,10 @@ export default function App() {
 
   const handleViewMLDashboard = () => {
     setCurrentScreen("ml-dashboard");
+  };
+
+  const handleViewProductLaunch = () => {
+    setCurrentScreen("product-launch");
   };
 
   const handleShowCredentialsHelp = () => {
@@ -369,6 +377,8 @@ export default function App() {
             onStartAIChat={handleStartAIChat}
             onOpenMindLensLab={handleOpenMindLensLab}
             onReferSomeone={() => setCurrentScreen("referral")}
+            onBookSession={() => setCurrentScreen("session-booking")}
+            onViewProductLaunch={handleViewProductLaunch}
           />
         )}
         {currentScreen === "consent" && (
@@ -406,6 +416,12 @@ export default function App() {
         {currentScreen === "ml-dashboard" && (
           <MLDashboardScreen
             onBack={() => setCurrentScreen("onboarding")}
+          />
+        )}
+        {currentScreen === "product-launch" && (
+          <ProductLaunchScreen
+            onBack={() => setCurrentScreen("onboarding")}
+            accessToken={checkSession().accessToken}
           />
         )}
         {currentScreen === "credentials-upload" && (
@@ -510,6 +526,12 @@ export default function App() {
         {currentScreen === "referral" && (
           <ReferralScreen
             onBack={() => setCurrentScreen("profile")}
+            userEmail={userEmail}
+          />
+        )}
+        {currentScreen === "session-booking" && (
+          <SessionBookingScreen
+            onBack={() => setCurrentScreen("onboarding")}
             userEmail={userEmail}
           />
         )}

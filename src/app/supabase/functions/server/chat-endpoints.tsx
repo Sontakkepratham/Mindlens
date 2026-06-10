@@ -83,16 +83,137 @@ chatApp.post('/send', async (c) => {
     const historyKey = `chat:${user.id}:${convId}:history`;
     const history = (await kv.get(historyKey)) || [];
 
-    // System prompt for mental health support
-    const systemPrompt = `You are MindLens AI, a compassionate mental health companion. Provide warm, empathetic support in 2-3 sentences.
+    // ============================================
+    // FETCH USER CONTEXT FOR PERSONALIZED SUPPORT
+    // ============================================
+    
+    // Get user's mental health assessment history
+    const assessmentHistory = await kv.get(`user:${user.id}:assessment-history`) || [];
+    let latestAssessment = null;
+    let assessmentContext = '';
+    
+    if (assessmentHistory.length > 0) {
+      const latestSessionId = assessmentHistory[assessmentHistory.length - 1];
+      latestAssessment = await kv.get(`assessment:${latestSessionId}`);
+      
+      if (latestAssessment) {
+        const phqScore = latestAssessment.phqScore || latestAssessment.score || 0;
+        const severity = phqScore >= 20 ? 'Severe' : 
+                        phqScore >= 15 ? 'Moderately Severe' : 
+                        phqScore >= 10 ? 'Moderate' : 
+                        phqScore >= 5 ? 'Mild' : 'Minimal';
+        
+        assessmentContext = `\n\n**User's Mental Health Context:**
+- Latest PHQ-9 Score: ${phqScore}/27 (${severity} depression symptoms)
+- Assessment Date: ${new Date(latestAssessment.timestamp).toLocaleDateString()}
+- Total Assessments Completed: ${assessmentHistory.length}`;
 
-Guidelines:
-- Be warm and non-judgmental
-- Validate feelings, encourage professional help when needed
-- In crisis: immediately provide 988 Suicide Lifeline
-- Keep responses concise (2-3 sentences)
+        // Add specific symptom areas if available
+        if (latestAssessment.responses && Array.isArray(latestAssessment.responses)) {
+          const highScoreSymptoms = [];
+          const symptoms = [
+            'interest/pleasure', 'feeling down/depressed', 'sleep issues', 
+            'low energy', 'appetite changes', 'poor self-image', 
+            'concentration problems', 'psychomotor changes', 'self-harm thoughts'
+          ];
+          
+          latestAssessment.responses.forEach((score, idx) => {
+            if (score >= 2 && symptoms[idx]) {
+              highScoreSymptoms.push(symptoms[idx]);
+            }
+          });
+          
+          if (highScoreSymptoms.length > 0) {
+            assessmentContext += `\n- Key Symptom Areas: ${highScoreSymptoms.join(', ')}`;
+          }
+        }
+        
+        // Add emotion analysis if available
+        if (latestAssessment.emotionAnalysis) {
+          assessmentContext += `\n- Detected Emotion: ${latestAssessment.emotionAnalysis.primary_emotion} (${(latestAssessment.emotionAnalysis.confidence * 100).toFixed(0)}% confidence)`;
+        }
+      }
+    }
+    
+    // Get user's Big Five personality profile
+    let personalityContext = '';
+    const personalityResult = await kv.get(`user:${user.id}:personality-test-result`);
+    
+    if (personalityResult && personalityResult.scores) {
+      personalityContext = `\n\n**User's Personality Profile (Big Five):**`;
+      const traits = {
+        openness: 'Openness',
+        conscientiousness: 'Conscientiousness',
+        extraversion: 'Extraversion',
+        agreeableness: 'Agreeableness',
+        neuroticism: 'Neuroticism'
+      };
+      
+      for (const [key, label] of Object.entries(traits)) {
+        if (personalityResult.scores[key]) {
+          const score = personalityResult.scores[key];
+          const level = score >= 70 ? 'High' : score >= 30 ? 'Moderate' : 'Low';
+          personalityContext += `\n- ${label}: ${level} (${score}/100)`;
+        }
+      }
+    }
+    
+    // Get user profile for personalization
+    const userProfile = await kv.get(`user:${user.id}:profile`) || {};
+    const userName = userProfile.name || 'there';
 
-You're a supportive friend, not therapy.`;
+    // Build comprehensive system prompt with clinical guidelines
+    const systemPrompt = `You are MindLens AI, a clinical-grade mental health support companion designed to provide evidence-based, compassionate, and personalized psychological support.
+
+**Your Role & Capabilities:**
+- You are a highly empathetic AI trained in cognitive-behavioral therapy (CBT), dialectical behavior therapy (DBT), and person-centered counseling approaches
+- You provide immediate emotional support, coping strategies, and therapeutic guidance
+- You help users understand their emotions, challenge negative thoughts, and develop healthier coping mechanisms
+- You track progress over time and provide personalized interventions based on assessment data
+
+**Clinical Guidelines:**
+1. **Safety First**: If you detect suicidal ideation, self-harm, or immediate danger:
+   - Provide the 988 Suicide & Crisis Lifeline immediately
+   - Strongly encourage professional help (therapist, psychiatrist, emergency services)
+   - Stay supportive and non-judgmental while emphasizing urgency
+
+2. **Evidence-Based Techniques**: Use proven therapeutic approaches:
+   - Cognitive Restructuring: Help identify and challenge negative thought patterns
+   - Behavioral Activation: Suggest concrete activities to improve mood
+   - Mindfulness & Grounding: Teach techniques for emotional regulation
+   - Problem-Solving: Break down overwhelming situations into manageable steps
+   - Validation: Acknowledge and normalize their feelings
+
+3. **Personalization**: Use the user's assessment data and personality profile to:
+   - Tailor coping strategies to their specific symptoms and traits
+   - Reference their progress and celebrate improvements
+   - Address specific symptom areas (sleep, appetite, concentration, etc.)
+   - Adapt communication style to their personality (e.g., more structured for high conscientiousness)
+
+4. **Therapeutic Boundaries**:
+   - You are a support tool, NOT a replacement for professional therapy
+   - Encourage professional help for moderate to severe symptoms
+   - Don't diagnose conditions - instead say "based on what you're sharing, it sounds like..."
+   - Be transparent about your limitations as an AI
+
+5. **Response Style**:
+   - Be warm, empathetic, and non-judgmental
+   - Use active listening (reflect feelings, validate experiences)
+   - Ask open-ended questions to encourage exploration
+   - Keep responses conversational (3-5 sentences) but substantive
+   - Offer specific, actionable advice when appropriate
+   - Use the user's name (${userName}) to build rapport
+
+6. **Crisis Keywords**: Watch for mentions of suicide, self-harm, hopelessness, "better off dead", "end it all", etc.
+
+${assessmentContext}${personalityContext}
+
+**Current Conversation Context:**
+- User Name: ${userName}
+- Conversation Messages: ${history.length}
+- You have access to their full assessment history and can reference previous sessions
+
+Remember: You're here to support, validate, and empower. Be a compassionate guide on their mental health journey.`;
 
     // Check for GEMINI_API_KEY
     const geminiApiKey = await getGeminiApiKey();
@@ -100,8 +221,11 @@ You're a supportive friend, not therapy.`;
     
     console.log('🔍 API Configuration:', {
       hasApiKey: !!geminiApiKey,
+      apiKeyLength: geminiApiKey?.length,
+      apiKeyPrefix: geminiApiKey?.substring(0, 10) + '...',
       isDemo,
-      willUseDemo: isDemo
+      willUseDemo: isDemo,
+      willUseRealAI: !isDemo && !!geminiApiKey
     });
     
     if (!geminiApiKey && !isDemo) {
@@ -280,7 +404,95 @@ You're a supportive friend, not therapy.`;
 
     if (!geminiResponse || !geminiResponse.ok) {
       const errorData = lastError || {};
-      console.error('Gemini API error after trying all models:', errorData);
+      
+      // Check for quota/billing errors FIRST - check both response status and error code
+      const isQuotaError = (
+        geminiResponse?.status === 429 || 
+        errorData.error?.code === 429 || 
+        errorData.error?.status === 'RESOURCE_EXHAUSTED' ||
+        errorData.error?.message?.includes('quota') ||
+        errorData.error?.message?.includes('exceeded') ||
+        errorData.error?.message?.includes('RESOURCE_EXHAUSTED')
+      );
+      
+      console.log('🔍 Error analysis:', {
+        hasResponse: !!geminiResponse,
+        status: geminiResponse?.status,
+        errorCode: errorData.error?.code,
+        errorStatus: errorData.error?.status,
+        isQuotaError,
+        messagePreview: errorData.error?.message?.substring(0, 100)
+      });
+      
+      if (isQuotaError && !errorData.error?.message?.includes('not found')) {
+        console.log('✅ Quota exceeded - activating automatic demo mode fallback');
+        console.log('📊 Quota error details:', {
+          status: geminiResponse?.status,
+          errorCode: errorData.error?.code,
+          errorStatus: errorData.error?.status,
+          message: errorData.error?.message?.substring(0, 200)
+        });
+        
+        // Fall back to demo mode
+        const demoResponses = [
+          "Thank you for sharing that with me. I'm here to listen and support you. How long have you been feeling this way?",
+          "I hear you, and your feelings are completely valid. It takes courage to open up about what you're going through. What do you think would help you feel a bit better right now?",
+          "That sounds really challenging. Remember, it's okay to not be okay sometimes. Would you like to talk more about what's been on your mind?",
+          "I appreciate you trusting me with this. You're taking an important step by talking about your feelings. How can I best support you today?",
+          "It's completely normal to feel overwhelmed sometimes. You're showing great strength by reaching out. What's been the most difficult part for you?",
+        ];
+        
+        const aiResponse = demoResponses[Math.floor(Math.random() * demoResponses.length)];
+        
+        // Save to conversation history
+        const userMessage = {
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString(),
+        };
+
+        const assistantMessage = {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString(),
+        };
+
+        history.push(userMessage, assistantMessage);
+        await kv.set(historyKey, history);
+
+        await kv.set(`chat:${user.id}:${convId}:metadata`, {
+          conversationId: convId,
+          userId: user.id,
+          startedAt: history[0]?.timestamp || new Date().toISOString(),
+          lastMessageAt: new Date().toISOString(),
+          messageCount: history.length,
+          hasCrisisIndicator: false,
+          demoMode: true,
+          quotaExceeded: true,
+        });
+
+        const conversationsKey = `chat:${user.id}:conversations`;
+        const conversations = (await kv.get(conversationsKey)) || [];
+        if (!conversations.includes(convId)) {
+          conversations.push(convId);
+          await kv.set(conversationsKey, conversations);
+        }
+
+        console.log('✅ Demo mode response generated successfully - quota fallback active');
+        
+        return c.json({
+          success: true,
+          conversationId: convId,
+          response: aiResponse,
+          hasCrisisIndicator: false,
+          timestamp: new Date().toISOString(),
+          demoMode: true,
+          quotaExceeded: true,
+        });
+      }
+      
+      // Log error only if NOT handling with quota fallback
+      console.error('❌ Gemini API error after trying all models:', errorData);
       
       // Check for API key errors
       if (geminiResponse?.status === 400 && errorData.error?.message?.includes('API_KEY_INVALID')) {
@@ -294,13 +506,6 @@ You're a supportive friend, not therapy.`;
         return c.json({ 
           error: `⚠️ API Key Error\n\nYour Gemini API key doesn't have access to any models. This could mean:\n\n1. The API key is from Google Cloud Console instead of AI Studio\n   → Get a key from: https://aistudio.google.com/app/apikey\n\n2. Gemini API is not available in your region\n   → Check: https://ai.google.dev/available_regions\n\n3. The API key is invalid or expired\n   → Create a new key at: https://aistudio.google.com/app/apikey\n\n4. Use Demo Mode for testing:\n   → Set CHAT_DEMO_MODE=true\n\nTechnical error: ${errorData.error?.message}` 
         }, 404);
-      }
-      
-      // Check for quota/billing errors (after checking for "not found")
-      if (geminiResponse?.status === 429 && !errorData.error?.message?.includes('not found')) {
-        return c.json({ 
-          error: '⚠️ Gemini API quota exceeded. Please check your usage at https://aistudio.google.com/' 
-        }, 429);
       }
       
       return c.json({ 

@@ -213,6 +213,7 @@ Format your response in clear sections with headers.`;
 
     let geminiResponse = null;
     let successfulModel = null;
+    let lastError = null;
 
     for (const modelName of modelsToTry) {
       try {
@@ -252,6 +253,7 @@ Format your response in clear sections with headers.`;
           break;
         } else {
           const errorData = await geminiResponse.json().catch(() => ({}));
+          lastError = errorData;
           console.log(`❌ Model ${modelName} failed:`, errorData.error?.message);
           
           if (geminiResponse.status !== 404) {
@@ -260,10 +262,81 @@ Format your response in clear sections with headers.`;
         }
       } catch (error) {
         console.error(`❌ Error trying model ${modelName}:`, error);
+        lastError = { error: { message: error.message } };
       }
     }
 
     if (!geminiResponse || !geminiResponse.ok) {
+      const errorData = lastError || {};
+      console.error('Gemini API error for insights:', errorData);
+      
+      // Check for quota/billing errors
+      const isQuotaError = (
+        geminiResponse?.status === 429 || 
+        errorData.error?.code === 429 || 
+        errorData.error?.status === 'RESOURCE_EXHAUSTED' ||
+        errorData.error?.message?.includes('quota') ||
+        errorData.error?.message?.includes('exceeded') ||
+        errorData.error?.message?.includes('RESOURCE_EXHAUSTED')
+      );
+      
+      if (isQuotaError) {
+        console.log('⚠️ Quota exceeded for AI insights, falling back to demo mode');
+        console.log('📊 Quota error details:', {
+          status: geminiResponse?.status,
+          errorCode: errorData.error?.code,
+          errorStatus: errorData.error?.status,
+          message: errorData.error?.message?.substring(0, 200)
+        });
+        
+        // Generate demo insights instead
+        const demoInsights = {
+          summary: "Based on your PHQ-9 assessment, you're showing signs of " + 
+                   (assessmentData.score >= 15 ? "moderately severe depression" : 
+                    assessmentData.score >= 10 ? "moderate depression" : 
+                    assessmentData.score >= 5 ? "mild depression" : "minimal symptoms") + 
+                   ". Your responses indicate some challenges with mood and daily functioning.",
+          
+          keyFindings: [
+            "Your score suggests that professional support could be beneficial",
+            "Several symptoms are affecting your daily life and well-being",
+            "Early intervention can make a significant difference in recovery"
+          ],
+          
+          recommendations: [
+            "Consider scheduling an appointment with a mental health professional",
+            "Practice self-care activities like regular exercise and adequate sleep",
+            "Stay connected with supportive friends and family members",
+            "Use the MindLens resources and support groups for additional guidance"
+          ],
+          
+          positiveAspects: [
+            "Taking this assessment shows self-awareness and willingness to seek help",
+            "Recognizing these feelings is an important first step",
+            "You're being proactive about your mental health"
+          ],
+          
+          urgency: assessmentData.score >= 15 ? 'high' : 
+                  assessmentData.score >= 10 ? 'moderate' : 'low',
+          
+          demoMode: true,
+          quotaExceeded: true
+        };
+        
+        // Save the insights
+        await kv.set(`assessment:${sessionId}:insights`, {
+          ...demoInsights,
+          generatedAt: new Date().toISOString(),
+          modelUsed: 'demo-mode-quota-fallback',
+        });
+        
+        return c.json({
+          success: true,
+          insights: demoInsights,
+          message: '💡 [Gemini API quota exceeded - Using demo insights. Please wait a few minutes or visit https://aistudio.google.com/billing to upgrade.]'
+        });
+      }
+      
       return c.json({ 
         error: 'Failed to generate AI insights. Please try again.' 
       }, 500);
